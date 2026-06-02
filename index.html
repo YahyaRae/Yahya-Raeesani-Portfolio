@@ -751,6 +751,218 @@
     .process-header { grid-template-columns: 1fr; gap: 1.5rem; }
     .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; }
     footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+    .hero-name-center { left: 1.5rem; }
+    .avail-badge { display: none; }
+  }
+
+  /* ── Grain texture overlay ──────────────────────────────────────────────── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9991;
+    opacity: 0.032;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 192px 192px;
+  }
+
+  /* ── Availability badge ─────────────────────────────────────────────────── */
+  .avail-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px 6px 10px;
+    border: 1px solid rgba(255,196,46,0.25);
+    border-radius: 20px;
+    background: rgba(255,196,46,0.04);
+  }
+  .avail-dot {
+    width: 7px; height: 7px;
+    background: #ffc42e;
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  .avail-badge span:last-child {
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: rgba(245,242,237,0.45);
+    white-space: nowrap;
+  }
+
+  /* ── Mobile hamburger ───────────────────────────────────────────────────── */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: none;
+    padding: 6px;
+    z-index: 102;
+  }
+  .hamburger span {
+    display: block;
+    width: 22px; height: 1.5px;
+    background: var(--white);
+    transition: transform 0.32s cubic-bezier(0.16,1,0.3,1), opacity 0.2s;
+  }
+  .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(4.5px, 4.5px); }
+  .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(4.5px, -4.5px); }
+
+  /* ── Mobile menu overlay ────────────────────────────────────────────────── */
+  .mobile-nav {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,10,0.97);
+    z-index: 98;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .mobile-nav.open { display: flex; }
+  .mobile-nav.visible { opacity: 1; }
+  .mobile-nav a {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.2rem, 10vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: rgba(245,242,237,0.5);
+    text-decoration: none;
+    padding: 0.45em 0;
+    transition: color 0.2s, transform 0.2s;
+    display: block;
+    text-align: center;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: color 0.2s, transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease;
+  }
+  .mobile-nav.visible a { transform: translateY(0); opacity: 1; }
+  .mobile-nav a:hover { color: var(--white); }
+  .mobile-nav a .mn-num {
+    font-size: 0.3em;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    vertical-align: super;
+    margin-right: 0.3em;
+  }
+  .mobile-nav-cta {
+    margin-top: 2rem;
+    background: var(--accent);
+    color: var(--black);
+    border: none;
+    padding: 14px 36px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.03em;
+    cursor: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s 0.32s ease, transform 0.4s 0.32s cubic-bezier(0.16,1,0.3,1);
+  }
+  .mobile-nav.visible .mobile-nav-cta { opacity: 1; transform: translateY(0); }
+
+  /* ── Tools & Software section ────────────────────────────────────────────── */
+  .tools-section { border-top: 1px solid var(--border); }
+  .tools-intro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: end;
+    margin-bottom: 3.5rem;
+  }
+  .tools-intro h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+  .tools-intro p { font-size: 15px; color: rgba(245,242,237,0.5); line-height: 1.7; }
+  .tools-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+  }
+  .tool-card {
+    background: var(--black);
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  .tool-card:hover { background: #0f0f0f; }
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  .tool-card:hover::before { transform: scaleX(1); }
+  .tool-icon-wrap {
+    width: 56px; height: 56px;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 2rem;
+    transition: border-color 0.3s;
+    font-size: 24px;
+  }
+  .tool-card:hover .tool-icon-wrap { border-color: rgba(232,255,71,0.4); }
+  .tool-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+  }
+  .tool-role {
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .tool-desc {
+    font-size: 14px;
+    color: rgba(245,242,237,0.45);
+    line-height: 1.7;
+    max-width: 380px;
+  }
+  .tool-tags {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 1.5rem;
+  }
+  .tool-tag {
+    font-size: 11px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(245,242,237,0.35);
+  }
+
+  @media (max-width: 768px) {
+    .hamburger { display: flex; }
+    .nav-cta { display: none; }
+    .tools-intro { grid-template-columns: 1fr; gap: 1.5rem; }
+    .tools-grid { grid-template-columns: 1fr; }
+    .tool-card { padding: 2rem; }
   }
 </style>
 </head>
@@ -767,8 +979,23 @@
     <li><a href="#process" onclick="event.preventDefault();document.getElementById('process').scrollIntoView({behavior:'smooth'})">Process</a></li>
     <li><a href="#contact" onclick="event.preventDefault();document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Contact</a></li>
   </ul>
+  <div class="avail-badge">
+    <span class="avail-dot"></span>
+    <span>Taking select projects</span>
+  </div>
   <button class="nav-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Hire me</button>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true">
+  <a href="#work" class="mn-link"><span class="mn-num">01</span>Work</a>
+  <a href="#services" class="mn-link"><span class="mn-num">02</span>Services</a>
+  <a href="#process" class="mn-link"><span class="mn-num">03</span>Process</a>
+  <a href="#contact" class="mn-link"><span class="mn-num">04</span>Contact</a>
+  <button class="mobile-nav-cta" onclick="closeMobileNav();document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Hire me</button>
+</div>
 
 <section class="hero">
   <div class="hero-bg"></div>
@@ -791,7 +1018,7 @@
   <div class="hero-content">
     <div class="hero-eyebrow">
       <div class="dot"></div>
-      <span>3 years experience · Open for work · 2026</span>
+      <span>3 years experience · Taking select projects · 2026</span>
     </div>
     <p class="hero-sub">Fast-paced video edits for creators, brands, and agencies. Reels, promos, YouTube — built to stop the scroll.</p>
     <div class="hero-actions">
@@ -815,12 +1042,12 @@
       <div class="l">Turnaround</div>
     </div>
     <div class="stat">
-      <div class="n" data-target="3" data-suffix="+"><span class="count-num">0</span><span class="count-suf">+</span></div>
-      <div class="l">Projects done</div>
+      <div class="n" data-target="50" data-suffix="+"><span class="count-num">0</span><span class="count-suf">+</span></div>
+      <div class="l">Videos edited</div>
     </div>
     <div class="stat">
-      <div class="n" data-target="100" data-suffix="%"><span class="count-num">0</span><span class="count-suf">%</span></div>
-      <div class="l">Client satisfaction</div>
+      <div class="n" data-target="10" data-suffix="+"><span class="count-num">0</span><span class="count-suf">+</span></div>
+      <div class="l">Clients</div>
     </div>
   </div>
 </section>
@@ -1010,6 +1237,39 @@
   </div>
 </section>
 
+<section class="tools-section" id="tools">
+  <div class="tools-intro">
+    <h2>Tools of the trade</h2>
+    <p>The software stack behind every cut, grade, and transition — chosen for speed, quality, and platform fit.</p>
+  </div>
+  <div class="tools-grid">
+    <div class="tool-card">
+      <div class="tool-icon-wrap">🎬</div>
+      <div class="tool-name">DaVinci Resolve</div>
+      <div class="tool-role">Primary editor & colorist</div>
+      <p class="tool-desc">Hollywood-grade color science and a non-linear timeline built for precision. Used for long-form edits and brand promos where quality is non-negotiable.</p>
+      <div class="tool-tags">
+        <span class="tool-tag">Color grading</span>
+        <span class="tool-tag">Long-form</span>
+        <span class="tool-tag">Brand promos</span>
+        <span class="tool-tag">Fusion FX</span>
+      </div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-icon-wrap">📱</div>
+      <div class="tool-name">CapCut</div>
+      <div class="tool-role">Short-form specialist</div>
+      <p class="tool-desc">Purpose-built for vertical, fast-cut content. When speed and platform-native energy matter more than render time — Reels, Shorts, and TikTok are home turf.</p>
+      <div class="tool-tags">
+        <span class="tool-tag">TikTok</span>
+        <span class="tool-tag">Reels</span>
+        <span class="tool-tag">Shorts</span>
+        <span class="tool-tag">Trending cuts</span>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="process" id="process">
   <div class="process-header">
     <h2>How it works</h2>
@@ -1117,7 +1377,7 @@
 
   // Scroll reveal
   const revealEls = document.querySelectorAll(
-    '.service-card, .step-row, .work-item, .stat, .brand-logo-item, .contact-link, .testimonial-inner, blockquote'
+    '.service-card, .step-row, .work-item, .stat, .brand-logo-item, .contact-link, .testimonial-inner, blockquote, .tool-card'
   );
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
@@ -1240,6 +1500,55 @@
     `;
     document.head.appendChild(pStyle);
   }
+
+  // ── Mobile hamburger menu ──────────────────────────────────────────────────
+  const hamburger = document.getElementById('hamburger');
+  const mobileNav = document.getElementById('mobileNav');
+
+  function closeMobileNav() {
+    hamburger.classList.remove('open');
+    mobileNav.classList.remove('visible');
+    setTimeout(() => mobileNav.classList.remove('open'), 300);
+    document.body.style.overflow = '';
+  }
+
+  hamburger.addEventListener('click', () => {
+    const isOpen = hamburger.classList.toggle('open');
+    if (isOpen) {
+      mobileNav.classList.add('open');
+      requestAnimationFrame(() => requestAnimationFrame(() => mobileNav.classList.add('visible')));
+      document.body.style.overflow = 'hidden';
+    } else {
+      closeMobileNav();
+    }
+  });
+
+  mobileNav.querySelectorAll('.mn-link').forEach((a, i) => {
+    a.style.transitionDelay = `${i * 0.06}s`;
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = a.getAttribute('href').slice(1);
+      closeMobileNav();
+      setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' }), 320);
+    });
+  });
+
+  // ── Magnetic buttons ───────────────────────────────────────────────────────
+  document.querySelectorAll('.btn-main, .nav-cta').forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      btn.style.transition = 'transform 0.15s ease, opacity 0.2s';
+    });
+    btn.addEventListener('mousemove', e => {
+      const r = btn.getBoundingClientRect();
+      const x = (e.clientX - r.left - r.width / 2) * 0.38;
+      const y = (e.clientY - r.top - r.height / 2) * 0.38;
+      btn.style.transform = `translate(${x}px, ${y}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transition = 'transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.2s';
+      btn.style.transform = '';
+    });
+  });
 </script>
 </body>
 </html>
