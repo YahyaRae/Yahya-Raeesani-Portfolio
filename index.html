@@ -1219,23 +1219,42 @@
     </a>
 
     <div class="work-item">
-      <div class="work-thumb t3">
-        <div class="work-play"><div class="play-tri"></div></div>
+      <div class="work-thumb" style="background:#000; position:relative; overflow:hidden;">
+        <video muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+          <source src="Iced_tea_-_portfolio_-_3mb.mp4" type="video/mp4">
+        </video>
+        <div class="work-play" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;"><div class="play-tri"></div></div>
       </div>
-      <div class="work-overlay">
-        <h3>Instagram reels pack</h3>
-        <div class="meta">Short-form · 3×30s</div>
-        <span class="work-badge badge-spec">Spec work</span>
+      <div class="work-overlay" style="opacity:1; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, transparent 60%);">
+        <h3>Iced Tea Ad</h3>
+        <div class="meta">Commercial · 30s</div>
+        <span class="work-badge badge-client">Portfolio</span>
       </div>
     </div>
     <div class="work-item">
-      <div class="work-thumb t4">
-        <div class="work-play"><div class="play-tri"></div></div>
+      <div class="work-thumb" style="background:#000; position:relative; overflow:hidden;">
+        <video muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+          <source src="mcp_motion_phone.mp4" type="video/mp4">
+        </video>
+        <div class="work-play" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;"><div class="play-tri"></div></div>
       </div>
-      <div class="work-overlay">
-        <h3>Event hype video</h3>
-        <div class="meta">Event · 90s</div>
-        <span class="work-badge badge-spec">Spec work</span>
+      <div class="work-overlay" style="opacity:1; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, transparent 60%);">
+        <h3>Motion Phone Promo</h3>
+        <div class="meta">Product · 30s</div>
+        <span class="work-badge badge-client">Portfolio</span>
+      </div>
+    </div>
+    <div class="work-item">
+      <div class="work-thumb" style="background:#000; position:relative; overflow:hidden;">
+        <video muted loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+          <source src="Pizza_paper_style_explainer_-_portfolio_-_3mb.mp4" type="video/mp4">
+        </video>
+        <div class="work-play" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;"><div class="play-tri"></div></div>
+      </div>
+      <div class="work-overlay" style="opacity:1; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, transparent 60%);">
+        <h3>Pizza Paper Explainer</h3>
+        <div class="meta">Explainer · 60s</div>
+        <span class="work-badge badge-client">Portfolio</span>
       </div>
     </div>
   </div>
@@ -1598,6 +1617,32 @@
     btn.addEventListener('mouseleave', () => {
       btn.style.transition = 'transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.2s';
       btn.style.transform = '';
+    });
+  });
+
+  // ── Video play on hover ──────────────────────────────────────────────────────
+  document.querySelectorAll('.work-item video').forEach(video => {
+    const item = video.closest('.work-item');
+    if (!item) return;
+    let playTimer;
+    item.addEventListener('mouseenter', () => {
+      playTimer = setTimeout(() => {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      }, 300);
+    });
+    item.addEventListener('mouseleave', () => {
+      clearTimeout(playTimer);
+      video.pause();
+      video.currentTime = 0;
+    });
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (video.paused) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
     });
   });
 </script>
