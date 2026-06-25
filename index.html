@@ -24,68 +24,43 @@
 <div class="cursor-ring" id="cursorRing"></div>
 
 <nav id="main-nav">
-  <!-- Left cap: logo disc -->
-  <div class="nav-logo-cap">
-    <div class="nav-disc" title="Yahya Raeesani">YR<span>.</span></div>
+  <!-- Monitor / logo block -->
+  <div class="nav-monitor" id="navMonitor">
+    <div class="nav-monitor-logo">YR<span>.</span></div>
+    <div class="nav-monitor-sub">V1 · EDIT</div>
   </div>
 
-  <div class="nav-sep"></div>
+  <!-- Timeline track area -->
+  <div class="nav-timeline">
+    <div class="timeline-ruler" id="timelineRuler" aria-hidden="true">
+      <div class="ruler-inner" id="rulerInner"></div>
+    </div>
+    <div class="timeline-track">
+      <span class="track-label">V1</span>
+      <div class="clip-lane">
+        <a class="nav-clip active" data-section="work" href="#work">
+          <span class="ci"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="1.5"/><line x1="7" y1="7" x2="7" y2="3"/><line x1="12" y1="7" x2="12" y2="3"/><line x1="17" y1="7" x2="17" y2="3"/><line x1="7" y1="17" x2="7" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="17" y1="17" x2="17" y2="21"/></svg></span>
+          <span class="cl">Work</span>
+        </a>
+        <a class="nav-clip" data-section="services" href="#services">
+          <span class="ci"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>
+          <span class="cl">Services</span>
+        </a>
+        <a class="nav-clip" data-section="process" href="#process">
+          <span class="ci"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
+          <span class="cl">Process</span>
+        </a>
+        <a class="nav-clip" data-section="contact" href="#contact">
+          <span class="ci"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+          <span class="cl">Contact</span>
+        </a>
+      </div>
+      <div class="timeline-playhead" id="navPlayhead"></div>
+    </div>
+  </div>
 
-  <!-- Nav items with icons -->
-  <ul class="nav-links">
-    <li class="nav-item" data-section="work">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24">
-          <rect x="2" y="7" width="20" height="10" rx="2"/>
-          <polyline points="16 7 16 3"/>
-          <polyline points="8 7 8 3"/>
-          <polyline points="16 17 16 21"/>
-          <polyline points="8 17 8 21"/>
-        </svg>
-      </div>
-      <a href="#work">Work</a>
-      <span class="nav-dot"></span>
-    </li>
-    <li class="nav-item" data-section="services">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
-          <circle cx="7" cy="7" r="1" fill="currentColor" stroke="none"/>
-        </svg>
-      </div>
-      <a href="#services">Services</a>
-      <span class="nav-dot"></span>
-    </li>
-    <li class="nav-item" data-section="process">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24">
-          <line x1="8" y1="6" x2="21" y2="6"/>
-          <line x1="8" y1="12" x2="21" y2="12"/>
-          <line x1="8" y1="18" x2="21" y2="18"/>
-          <line x1="3" y1="6" x2="3.01" y2="6"/>
-          <line x1="3" y1="12" x2="3.01" y2="12"/>
-          <line x1="3" y1="18" x2="3.01" y2="18"/>
-        </svg>
-      </div>
-      <a href="#process">Process</a>
-      <span class="nav-dot"></span>
-    </li>
-    <li class="nav-item" data-section="contact">
-      <div class="nav-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-          <polyline points="22,6 12,13 2,6"/>
-        </svg>
-      </div>
-      <a href="#contact">Contact</a>
-      <span class="nav-dot"></span>
-    </li>
-  </ul>
-
-  <div class="nav-sep"></div>
-
-  <!-- Right cap: status + CTA + mobile hamburger -->
-  <div class="nav-right-cap">
+  <!-- Right actions -->
+  <div class="nav-actions">
     <div class="avail-badge">
       <span class="avail-dot"></span>
       <span>Taking select projects</span>
