@@ -442,6 +442,37 @@ document.querySelectorAll('.work-item video').forEach(video => {
   setTimeout(update, 100);
 })();
 
+// ── Client shorts: modal player ──────────────────────────────────────────
+(function clipModal() {
+  const modal = document.getElementById('clipModal');
+  if (!modal) return;
+  const frame = document.getElementById('clipFrame');
+  const closeBtn = modal.querySelector('.clip-modal-close');
+  const backdrop = modal.querySelector('.clip-modal-backdrop');
+
+  function open(src) {
+    frame.src = src;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function close() {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    frame.src = '';
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.clip-thumb[data-embed]').forEach(btn => {
+    btn.addEventListener('click', () => open(btn.dataset.embed));
+  });
+  closeBtn.addEventListener('click', close);
+  backdrop.addEventListener('click', close);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) close();
+  });
+})();
+
 // ── 3D mouse tilt on cards ───────────────────────────────────────────────
 (function tiltCards() {
   if (window.matchMedia('(hover: none)').matches) return; // skip touch devices
