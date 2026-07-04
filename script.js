@@ -76,7 +76,7 @@ if (statsSection) {
   so.observe(statsSection);
 }
 
-// ── Hero sequential reveal ───────────────────────────────────────────────
+// ── Page load: finish progress bar ───────────────────────────────────────
 window.addEventListener('load', () => {
   const pb = document.getElementById('progress-bar');
   if (pb) {
@@ -84,30 +84,68 @@ window.addEventListener('load', () => {
     setTimeout(() => { pb.style.opacity = '0'; }, 350);
     setTimeout(() => { pb.remove(); }, 900);
   }
-  [
-    { sel: '.hero-eyebrow', delay: 950  },
-    { sel: '.hero-sub',     delay: 1200 },
-    { sel: '.hero-actions', delay: 1420 },
-  ].forEach(({ sel, delay }) => {
-    const el = document.querySelector(sel);
-    if (!el) return;
-    setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, delay);
-  });
 });
 
-// ── Floating accent particles ────────────────────────────────────────────
-const hero = document.querySelector('.hero');
-if (hero) {
-  for (let i = 0; i < 5; i++) {
-    const p = document.createElement('div');
-    const size = Math.random() * 3 + 1;
-    p.style.cssText = `position:absolute;width:${size}px;height:${size}px;background:#e8ff47;border-radius:50%;left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:${Math.random()*0.2+0.05};animation:floatP ${Math.random()*8+6}s ease-in-out infinite alternate ${Math.random()*4}s;pointer-events:none;z-index:1;`;
-    hero.appendChild(p);
+// ── Hero: running timecode HUD ───────────────────────────────────────────
+(function heroTimecode() {
+  const reel = document.getElementById('heroReel');
+  const tc = document.getElementById('hudTimecode');
+  if (!reel || !tc) return;
+  const FPS = 24;
+  function tick() {
+    const t = reel.currentTime || 0;
+    const h = String(Math.floor(t / 3600)).padStart(2, '0');
+    const m = String(Math.floor(t / 60) % 60).padStart(2, '0');
+    const s = String(Math.floor(t) % 60).padStart(2, '0');
+    const f = String(Math.floor((t % 1) * FPS)).padStart(2, '0');
+    tc.textContent = `${h}:${m}:${s}:${f}`;
+    requestAnimationFrame(tick);
   }
-  const ps = document.createElement('style');
-  ps.textContent = `@keyframes floatP{from{transform:translate(0,0)}to{transform:translate(${Math.random()>0.5?'':'-'}${Math.floor(Math.random()*30+10)}px,${Math.random()>0.5?'':'-'}${Math.floor(Math.random()*30+10)}px)}}`;
-  document.head.appendChild(ps);
-}
+  requestAnimationFrame(tick);
+})();
+
+// ── Hero: sound toggle (reel autoplays muted per browser policy) ─────────
+(function heroSound() {
+  const reel = document.getElementById('heroReel');
+  const btn = document.getElementById('heroSound');
+  if (!reel || !btn) return;
+  const label = btn.querySelector('.hud-sound-label');
+  function render() {
+    btn.classList.toggle('sound-on', !reel.muted);
+    if (label) label.textContent = reel.muted ? 'SOUND ON' : 'MUTE';
+  }
+  btn.addEventListener('click', () => {
+    reel.muted = !reel.muted;
+    if (!reel.muted && reel.paused) reel.play().catch(() => {});
+    render();
+  });
+  render();
+})();
+
+// ── Hero: 3D screen tilt-away on scroll ──────────────────────────────────
+(function heroTilt3d() {
+  const screen = document.getElementById('heroScreen');
+  const heroEl = document.querySelector('.hero');
+  const reel = document.getElementById('heroReel');
+  if (!screen || !heroEl) return;
+  let ticking = false;
+  function apply() {
+    ticking = false;
+    const h = heroEl.offsetHeight || 1;
+    const p = Math.min(Math.max(window.scrollY / h, 0), 1);
+    screen.style.transform = `rotateX(${p * 14}deg) scale(${1 - p * 0.18}) translateY(${p * -60}px)`;
+    screen.style.opacity = String(1 - p * 0.55);
+    // Pause the reel offscreen so it doesn't burn resources
+    if (reel) {
+      if (p >= 1 && !reel.paused) reel.pause();
+      else if (p < 1 && reel.paused && !reel.dataset.userPaused) reel.play().catch(() => {});
+    }
+  }
+  window.addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(apply); }
+  }, { passive: true });
+  apply();
+})();
 
 // ── Mobile hamburger ─────────────────────────────────────────────────────
 const hamburger = document.getElementById('hamburger');
@@ -358,9 +396,9 @@ document.querySelectorAll('.work-item video').forEach(video => {
   video.addEventListener('loadedmetadata', () => {
     durEl.textContent = fmtTime(video.duration);
   });
-  video.addEventListener('play', syncPlayIcon);
-  video.addEventListener('pause', syncPlayIcon);
-  video.addEventListener('ended', () => { video.currentTime = 0; syncPlayIcon(); });
+  video.addEventListener('play', () => { syncPlayIcon(); item.classList.add('is-playing'); });
+  video.addEventListener('pause', () => { syncPlayIcon(); item.classList.remove('is-playing'); });
+  video.addEventListener('ended', () => { video.currentTime = 0; syncPlayIcon(); item.classList.remove('is-playing'); });
 
   // Hover auto-play
   let playTimer;
@@ -380,7 +418,7 @@ document.querySelectorAll('.work-item video').forEach(video => {
   });
 });
 
-// ── Sticky-stacking project cards ────────────────────────────────────────
+// ── Sticky-stacking project cards (with 3D recede) ───────────────────────
 (function projectStack() {
   const wraps = Array.from(document.querySelectorAll('.project-card-wrap'));
   if (!wraps.length) return;
@@ -394,7 +432,7 @@ document.querySelectorAll('.work-item video').forEach(video => {
       const maxScroll = Math.max(wrapRect.height - card.offsetHeight, 1);
       const progress = Math.min(Math.max((stickyTop - wrapRect.top) / maxScroll, 0), 1);
       const scale = 1 - progress * 0.06;
-      card.style.transform = `scale(${scale})`;
+      card.style.transform = `scale(${scale}) rotateX(${progress * 7}deg) translateZ(${progress * -40}px)`;
       card.style.opacity = String(1 - progress * 0.2);
     });
   }
@@ -402,4 +440,38 @@ document.querySelectorAll('.work-item video').forEach(video => {
   window.addEventListener('scroll', update, { passive: true });
   window.addEventListener('resize', update);
   setTimeout(update, 100);
+})();
+
+// ── 3D mouse tilt on cards ───────────────────────────────────────────────
+(function tiltCards() {
+  if (window.matchMedia('(hover: none)').matches) return; // skip touch devices
+  const els = document.querySelectorAll('.project-card-media, .service-card, .tool-card');
+  els.forEach(el => {
+    let raf = null;
+    // The scroll-reveal leaves an inline staggered transition and a .revealed
+    // class with transform:!important — both would fight the tilt. Hand the
+    // element fully over to the tilt on first hover.
+    el.addEventListener('mouseenter', () => {
+      if (el.dataset.tiltReady) return;
+      el.dataset.tiltReady = '1';
+      el.classList.remove('revealed');
+      el.style.opacity = '1';
+      el.style.transition = '';
+      el.style.transform = 'none';
+    });
+    el.addEventListener('mousemove', e => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = null;
+        const r = el.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        el.style.transform = `perspective(900px) rotateY(${x * 7}deg) rotateX(${-y * 6}deg) translateZ(12px)`;
+      });
+    });
+    el.addEventListener('mouseleave', () => {
+      if (raf) { cancelAnimationFrame(raf); raf = null; }
+      el.style.transform = 'perspective(900px) rotateY(0deg) rotateX(0deg) translateZ(0)';
+    });
+  });
 })();

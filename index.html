@@ -79,55 +79,38 @@
 
 
 <section class="hero">
-  <div class="hero-bg">
-    <video class="hero-reel" autoplay muted loop playsinline preload="auto" src="Trimmed Show Reel.mov"></video>
-    <div class="hero-reel-overlay"></div>
-  </div>
-  <div class="hero-ticker" aria-hidden="true">
-    <div class="ticker-text">
-      <span>EDITOR</span><span>EDITOR</span><span>EDITOR</span><span>EDITOR</span>
+  <div class="hero-screen" id="heroScreen">
+    <div class="hero-bg">
+      <video class="hero-reel" id="heroReel" autoplay muted loop playsinline preload="auto" src="Trimmed Show Reel.mov"></video>
+      <div class="hero-reel-overlay"></div>
+    </div>
+
+    <!-- Camera viewfinder HUD -->
+    <div class="hero-hud" aria-hidden="false">
+      <span class="vf-corner vf-tl"></span>
+      <span class="vf-corner vf-tr"></span>
+      <span class="vf-corner vf-bl"></span>
+      <span class="vf-corner vf-br"></span>
+
+      <div class="hud-top">
+        <div class="hud-rec"><span class="hud-rec-dot"></span>REC</div>
+        <div class="hud-title">SHOWREEL — 2026</div>
+        <div class="hud-timecode" id="hudTimecode">00:00:00:00</div>
+      </div>
+
+      <div class="hud-bottom">
+        <div class="hud-meta">YR. · 4K · 24FPS</div>
+        <button class="hud-sound" id="heroSound" aria-label="Toggle sound">
+          <span class="hud-sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span class="hud-sound-label">SOUND ON</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Centred name — the main hero statement -->
-  <div class="hero-name-center" aria-label="Yahya Raeesani — Video Editor">
-    <div class="name-clip"><span class="name-drop yahya">Yahya</span></div>
-    <div class="name-clip"><span class="name-drop raeesani">Raeesani</span></div>
-    <div class="name-badge">
-      <span class="name-badge-line"></span>
-      <span class="name-badge-text">Video Editor</span>
-    </div>
-  </div>
-
-  <div class="hero-content">
-    <div class="hero-eyebrow">
-      <div class="dot"></div>
-      <span>3 years experience · Taking select projects · 2026</span>
-    </div>
-    <p class="hero-sub">Fast-paced video edits for creators, brands, and agencies. Reels, promos, YouTube — built to stop the scroll.</p>
-    <div class="hero-actions">
-      <a href="#work" onclick="event.preventDefault();document.getElementById('work').scrollIntoView({behavior:'smooth'})" class="btn-main">See my work</a>
-      <a href="#contact" onclick="event.preventDefault();document.getElementById('contact').scrollIntoView({behavior:'smooth'})" class="btn-ghost">Get in touch <span class="arrow">→</span></a>
-    </div>
-  </div>
-
-  <div class="hero-stats">
-    <div class="stat">
-      <div class="n" data-target="3" data-suffix="yr"><span class="count-num">0</span><span class="count-suf">yr</span></div>
-      <div class="l">Experience</div>
-    </div>
-    <div class="stat">
-      <div class="n" data-target="24" data-suffix="h"><span class="count-num">0</span><span class="count-suf">h</span></div>
-      <div class="l">Turnaround</div>
-    </div>
-    <div class="stat">
-      <div class="n" data-target="50" data-suffix="+"><span class="count-num">0</span><span class="count-suf">+</span></div>
-      <div class="l">Videos edited</div>
-    </div>
-    <div class="stat">
-      <div class="n" data-target="10" data-suffix="+"><span class="count-num">0</span><span class="count-suf">+</span></div>
-      <div class="l">Clients</div>
-    </div>
+  <div class="hero-scroll-cue" onclick="document.getElementById('work').scrollIntoView({behavior:'smooth'})">
+    <span>Scroll</span>
+    <span class="cue-line"></span>
   </div>
 </section>
 
