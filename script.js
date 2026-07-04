@@ -22,7 +22,7 @@ document.addEventListener('mousemove', e => {
 
 // ── Scroll reveal ────────────────────────────────────────────────────────
 const revealEls = document.querySelectorAll(
-  '.service-card, .step-row, .work-item, .stat, .brand-logo-item, .contact-link, .testimonial-inner, blockquote, .tool-card'
+  '.service-card, .step-row, .work-item, .stat, .brand-logo-item, .contact-link, .testimonial-inner, blockquote, .tool-card, .clip-card'
 );
 const revealStyle = document.createElement('style');
 revealStyle.textContent = '.revealed { opacity: 1 !important; transform: translateY(0) !important; }';
