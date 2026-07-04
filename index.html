@@ -24,51 +24,48 @@
 <div class="cursor-ring" id="cursorRing"></div>
 
 <nav id="main-nav">
-  <!-- Monitor / logo block -->
-  <div class="nav-monitor" id="navMonitor">
-    <div class="nav-monitor-logo">YR<span>.</span></div>
-    <div class="nav-monitor-sub">V1 · EDIT</div>
-  </div>
-
-  <!-- Timeline track area -->
-  <div class="nav-timeline">
-    <div class="timeline-ruler" id="timelineRuler" aria-hidden="true">
-      <div class="ruler-inner" id="rulerInner"></div>
+  <div class="nav-pill" id="navPill">
+    <!-- Logo block -->
+    <div class="nav-pill-logo" id="navMonitor">
+      <span class="logo-text">YR<span>.</span></span>
+      <span class="logo-dot"></span>
     </div>
-    <div class="timeline-track">
-      <span class="track-label">V1</span>
-      <div class="clip-lane">
-        <a class="nav-clip active" data-section="work" href="#work">
-          <span class="ci"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="1.5"/><line x1="7" y1="7" x2="7" y2="3"/><line x1="12" y1="7" x2="12" y2="3"/><line x1="17" y1="7" x2="17" y2="3"/><line x1="7" y1="17" x2="7" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="17" y1="17" x2="17" y2="21"/></svg></span>
-          <span class="cl">Work</span>
+
+    <!-- Waveform track + section markers -->
+    <div class="nav-pill-track">
+      <div class="nav-wave" id="navWave" aria-hidden="true"></div>
+      <div class="nav-markers">
+        <a class="nav-marker active" data-section="work" href="#work">
+          <span class="nm-dot"></span>
+          <span class="nm-label">Work</span>
         </a>
-        <a class="nav-clip" data-section="services" href="#services">
-          <span class="ci"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>
-          <span class="cl">Services</span>
+        <a class="nav-marker" data-section="services" href="#services">
+          <span class="nm-dot"></span>
+          <span class="nm-label">Services</span>
         </a>
-        <a class="nav-clip" data-section="process" href="#process">
-          <span class="ci"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
-          <span class="cl">Process</span>
+        <a class="nav-marker" data-section="process" href="#process">
+          <span class="nm-dot"></span>
+          <span class="nm-label">Process</span>
         </a>
-        <a class="nav-clip" data-section="contact" href="#contact">
-          <span class="ci"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
-          <span class="cl">Contact</span>
+        <a class="nav-marker" data-section="contact" href="#contact">
+          <span class="nm-dot"></span>
+          <span class="nm-label">Contact</span>
         </a>
       </div>
-      <div class="timeline-playhead" id="navPlayhead"></div>
+      <div class="nav-marker-glow" id="navPlayhead"></div>
     </div>
-  </div>
 
-  <!-- Right actions -->
-  <div class="nav-actions">
-    <div class="avail-badge">
-      <span class="avail-dot"></span>
-      <span>Taking select projects</span>
+    <!-- Right actions -->
+    <div class="nav-pill-actions">
+      <div class="avail-badge">
+        <span class="avail-dot"></span>
+        <span>Taking select projects</span>
+      </div>
+      <button class="nav-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Hire me</button>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
-    <button class="nav-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Hire me</button>
-    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-      <span></span><span></span><span></span>
-    </button>
   </div>
 </nav>
 
@@ -82,7 +79,10 @@
 
 
 <section class="hero">
-  <div class="hero-bg"></div>
+  <div class="hero-bg">
+    <video class="hero-reel" autoplay muted loop playsinline preload="auto" src="Trimmed Show Reel.mov"></video>
+    <div class="hero-reel-overlay"></div>
+  </div>
   <div class="hero-ticker" aria-hidden="true">
     <div class="ticker-text">
       <span>EDITOR</span><span>EDITOR</span><span>EDITOR</span><span>EDITOR</span>
@@ -133,7 +133,78 @@
 
 <section class="work" id="work">
   <div class="section-tag">Selected work</div>
-  <div class="work-grid">
+  <h2 class="projects-heading">Projects</h2>
+
+  <div class="project-stack">
+
+    <div class="project-card-wrap">
+      <div class="project-card">
+        <div class="project-card-top">
+          <span class="project-num">01</span>
+          <div class="project-card-info">
+            <span class="project-cat">Portfolio</span>
+            <h3 class="project-name">Iced Tea Ad</h3>
+          </div>
+          <a href="#contact" class="project-watch">Watch reel</a>
+        </div>
+        <div class="project-card-media work-item">
+          <div class="work-thumb" style="background:#000; position:relative; overflow:hidden;">
+            <video loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+              <source src="Iced_tea_-_portfolio_-_3mb.mp4" type="video/mp4">
+            </video>
+            <div class="work-play" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;"><div class="play-tri"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card-wrap">
+      <div class="project-card">
+        <div class="project-card-top">
+          <span class="project-num">02</span>
+          <div class="project-card-info">
+            <span class="project-cat">Portfolio</span>
+            <h3 class="project-name">Motion Phone Promo</h3>
+          </div>
+          <a href="#contact" class="project-watch">Watch reel</a>
+        </div>
+        <div class="project-card-media work-item">
+          <div class="work-thumb" style="background:#000; position:relative; overflow:hidden;">
+            <video loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+              <source src="mcp_motion_phone.mp4" type="video/mp4">
+            </video>
+            <div class="work-play" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;"><div class="play-tri"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card-wrap">
+      <div class="project-card">
+        <div class="project-card-top">
+          <span class="project-num">03</span>
+          <div class="project-card-info">
+            <span class="project-cat">Portfolio</span>
+            <h3 class="project-name">Pizza Paper Explainer</h3>
+          </div>
+          <a href="#contact" class="project-watch">Watch reel</a>
+        </div>
+        <div class="project-card-media work-item">
+          <div class="work-thumb" style="background:#000; position:relative; overflow:hidden;">
+            <video loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+              <source src="Pizza_paper_style_explainer_-_portfolio_-_3mb.mp4" type="video/mp4">
+            </video>
+            <div class="work-play" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;"><div class="play-tri"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="more-clips">
+    <div class="section-tag">More clips</div>
+    <div class="clips-grid">
 
     <!-- YouTube Short — Gen Z Relationship Mindset -->
     <a href="https://youtube.com/shorts/yE1taB1sEDA" target="_blank" class="work-item" style="text-decoration:none;color:inherit;">
@@ -254,44 +325,6 @@
       </div>
     </a>
 
-    <div class="work-item">
-      <div class="work-thumb" style="background:#000; position:relative; overflow:hidden;">
-        <video loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
-          <source src="Iced_tea_-_portfolio_-_3mb.mp4" type="video/mp4">
-        </video>
-        <div class="work-play" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;"><div class="play-tri"></div></div>
-      </div>
-      <div class="work-overlay" style="opacity:1; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, transparent 60%);">
-        <h3>Iced Tea Ad</h3>
-        <div class="meta">Commercial · 30s</div>
-        <span class="work-badge badge-client">Portfolio</span>
-      </div>
-    </div>
-    <div class="work-item">
-      <div class="work-thumb" style="background:#000; position:relative; overflow:hidden;">
-        <video loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
-          <source src="mcp_motion_phone.mp4" type="video/mp4">
-        </video>
-        <div class="work-play" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;"><div class="play-tri"></div></div>
-      </div>
-      <div class="work-overlay" style="opacity:1; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, transparent 60%);">
-        <h3>Motion Phone Promo</h3>
-        <div class="meta">Product · 30s</div>
-        <span class="work-badge badge-client">Portfolio</span>
-      </div>
-    </div>
-    <div class="work-item">
-      <div class="work-thumb" style="background:#000; position:relative; overflow:hidden;">
-        <video loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
-          <source src="Pizza_paper_style_explainer_-_portfolio_-_3mb.mp4" type="video/mp4">
-        </video>
-        <div class="work-play" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;"><div class="play-tri"></div></div>
-      </div>
-      <div class="work-overlay" style="opacity:1; background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, transparent 60%);">
-        <h3>Pizza Paper Explainer</h3>
-        <div class="meta">Explainer · 60s</div>
-        <span class="work-badge badge-client">Portfolio</span>
-      </div>
     </div>
   </div>
 </section>

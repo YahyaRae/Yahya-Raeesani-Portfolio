@@ -152,26 +152,22 @@ document.querySelectorAll('.btn-main, .nav-cta').forEach(btn => {
   });
 });
 
-// ── Timeline nav: ruler tick generation ─────────────────────────────────
-(function buildRuler() {
-  const ruler = document.getElementById('rulerInner');
-  if (!ruler) return;
-  const TICKS = 40;
-  for (let i = 0; i < TICKS; i++) {
-    const mark = document.createElement('div');
-    mark.className = 'ruler-mark' + (i % 5 === 0 ? ' major' : '');
-    if (i % 5 === 0) {
-      const s = i * 2;
-      const label = document.createElement('span');
-      label.className = 'rl';
-      label.textContent = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
-      mark.appendChild(label);
-    }
-    ruler.appendChild(mark);
+// ── Pill nav: animated waveform bar generation ──────────────────────────
+(function buildWave() {
+  const wave = document.getElementById('navWave');
+  if (!wave) return;
+  const BARS = 48;
+  for (let i = 0; i < BARS; i++) {
+    const bar = document.createElement('span');
+    const dur = (0.7 + (i % 5) * 0.16).toFixed(2);
+    const delay = (((i * 0.13) % 1.1)).toFixed(2);
+    bar.style.animationDuration = dur + 's';
+    bar.style.animationDelay = delay + 's';
+    wave.appendChild(bar);
   }
 })();
 
-// ── Timeline nav: 3D scroll-away ────────────────────────────────────────
+// ── Pill nav: 3D scroll-away ─────────────────────────────────────────────
 const mainNav = document.getElementById('main-nav');
 let lastScrollY = 0;
 window.addEventListener('scroll', () => {
@@ -184,21 +180,38 @@ window.addEventListener('scroll', () => {
   lastScrollY = y;
 }, { passive: true });
 
-// ── Timeline nav: scroll-spy + playhead ─────────────────────────────────
+// ── Pill nav: mouse-reactive 3D tilt ─────────────────────────────────────
+(function navTilt() {
+  const pill = document.getElementById('navPill');
+  if (!pill) return;
+  pill.addEventListener('mousemove', e => {
+    const r = pill.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    pill.style.transform = `rotateY(${x * 8}deg) rotateX(${-y * 6}deg)`;
+  });
+  pill.addEventListener('mouseleave', () => {
+    pill.style.transform = 'rotateY(0deg) rotateX(0deg)';
+  });
+})();
+
+// ── Pill nav: scroll-spy + active marker glow ────────────────────────────
 const NAV_CLIPS = ['work', 'services', 'process', 'contact'];
 const clipMap = {};
 NAV_CLIPS.forEach(id => {
-  clipMap[id] = document.querySelector(`.nav-clip[data-section="${id}"]`);
+  clipMap[id] = document.querySelector(`.nav-marker[data-section="${id}"]`);
 });
 
 function movePlayhead(id) {
   const playhead = document.getElementById('navPlayhead');
-  const clip = clipMap[id];
-  const lane = document.querySelector('.clip-lane');
-  if (!playhead || !clip || !lane) return;
-  const laneRect = lane.getBoundingClientRect();
-  const clipRect = clip.getBoundingClientRect();
-  playhead.style.left = (clipRect.left - laneRect.left + clipRect.width / 2) + 'px';
+  const marker = clipMap[id];
+  const track = document.querySelector('.nav-markers');
+  if (!playhead || !marker || !track) return;
+  const trackRect = track.getBoundingClientRect();
+  const markerRect = marker.getBoundingClientRect();
+  const glowWidth = Math.max(24, markerRect.width * 0.6);
+  playhead.style.left = (markerRect.left - trackRect.left + markerRect.width / 2 - glowWidth / 2) + 'px';
+  playhead.style.width = glowWidth + 'px';
 }
 
 const spyObserver = new IntersectionObserver(entries => {
@@ -216,20 +229,20 @@ NAV_CLIPS.forEach(id => {
   if (el) spyObserver.observe(el);
 });
 
-// Nav clip clicks
-document.querySelectorAll('.nav-clip[data-section]').forEach(clip => {
-  clip.addEventListener('click', e => {
+// Nav marker clicks
+document.querySelectorAll('.nav-marker[data-section]').forEach(marker => {
+  marker.addEventListener('click', e => {
     e.preventDefault();
-    document.getElementById(clip.dataset.section)?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById(marker.dataset.section)?.scrollIntoView({ behavior: 'smooth' });
   });
 });
 
-// Logo monitor click → top
+// Logo click → top
 document.getElementById('navMonitor')?.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// Init playhead on first active clip
+// Init glow on first active marker
 setTimeout(() => movePlayhead('work'), 100);
 
 // ── Custom video player on work items ───────────────────────────────────
@@ -366,3 +379,27 @@ document.querySelectorAll('.work-item video').forEach(video => {
     video.paused ? video.play().catch(()=>{}) : video.pause();
   });
 });
+
+// ── Sticky-stacking project cards ────────────────────────────────────────
+(function projectStack() {
+  const wraps = Array.from(document.querySelectorAll('.project-card-wrap'));
+  if (!wraps.length) return;
+
+  function update() {
+    wraps.forEach(wrap => {
+      const card = wrap.querySelector('.project-card');
+      if (!card) return;
+      const stickyTop = parseFloat(getComputedStyle(card).top) || 0;
+      const wrapRect = wrap.getBoundingClientRect();
+      const maxScroll = Math.max(wrapRect.height - card.offsetHeight, 1);
+      const progress = Math.min(Math.max((stickyTop - wrapRect.top) / maxScroll, 0), 1);
+      const scale = 1 - progress * 0.06;
+      card.style.transform = `scale(${scale})`;
+      card.style.opacity = String(1 - progress * 0.2);
+    });
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
+  setTimeout(update, 100);
+})();
