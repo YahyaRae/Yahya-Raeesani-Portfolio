@@ -140,9 +140,7 @@ window.addEventListener('load', () => {
   if (kling.readyState >= 1) grabDuration();
   else kling.addEventListener('loadedmetadata', grabDuration);
 
-  let ticking = false;
   function apply() {
-    ticking = false;
     const track = Math.max(pin.offsetHeight - window.innerHeight, 1);
     const p = Math.min(Math.max(window.scrollY / track, 0), 1);
     if (duration) {
@@ -157,10 +155,16 @@ window.addEventListener('load', () => {
       else if (!past && reel.paused) reel.play().catch(() => {});
     }
   }
-  window.addEventListener('scroll', () => {
-    if (!ticking) { ticking = true; requestAnimationFrame(apply); }
-  }, { passive: true });
-  window.addEventListener('resize', apply);
+  // Cancel-and-reschedule rAF throttle: unlike a "ticking" boolean gate, this
+  // can never get permanently stuck if a scheduled frame is ever dropped
+  // (e.g. the tab is briefly backgrounded right as scrolling starts).
+  let rafId = null;
+  function scheduleApply() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => { rafId = null; apply(); });
+  }
+  window.addEventListener('scroll', scheduleApply, { passive: true });
+  window.addEventListener('resize', scheduleApply);
   apply();
 })();
 

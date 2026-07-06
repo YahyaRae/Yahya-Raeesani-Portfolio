@@ -399,21 +399,21 @@ nav.nav-scrolled {
   content: '';
   position: absolute;
   border-radius: 50%;
-  filter: blur(90px);
+  filter: blur(68px);
   will-change: transform, opacity;
 }
 /* Ground glow beneath the levitating model (lower right) */
 .hero-bg-glow::before {
-  width: 34vw; height: 24vw;
-  right: 2vw; bottom: 8vh;
-  background: radial-gradient(circle, rgba(232,255,71,0.16) 0%, rgba(140,190,40,0.08) 45%, transparent 70%);
+  width: 40vw; height: 30vw;
+  right: 2vw; bottom: 6vh;
+  background: radial-gradient(circle, rgba(232,255,71,0.32) 0%, rgba(140,190,40,0.18) 45%, transparent 70%);
   animation: glowBreathe 6.5s ease-in-out infinite alternate;
 }
 /* Drifting ambient blob (upper left) */
 .hero-bg-glow::after {
-  width: 40vw; height: 32vw;
+  width: 42vw; height: 34vw;
   left: -6vw; top: -4vh;
-  background: radial-gradient(circle, rgba(140,190,40,0.1) 0%, rgba(232,255,71,0.05) 50%, transparent 72%);
+  background: radial-gradient(circle, rgba(140,190,40,0.22) 0%, rgba(232,255,71,0.14) 50%, transparent 72%);
   animation: glowDrift 14s ease-in-out infinite alternate;
 }
 @keyframes glowBreathe {
@@ -425,7 +425,12 @@ nav.nav-scrolled {
   to   { transform: translate(9vw, 7vh) scale(1.2); opacity: 1; }
 }
 
-/* Shared video card shell */
+/* Shared video card shell.
+   NOTE: intentionally no z-index here — layering is done via DOM/paint
+   order (ticker markup comes before the cards in index.html) so that
+   .kling-card never becomes a CSS stacking context. A stacking context
+   would trap its child video's mix-blend-mode inside an empty local
+   context instead of letting it blend with the real page behind it. */
 .hero-card {
   position: absolute;
   border-radius: 18px;
@@ -433,7 +438,6 @@ nav.nav-scrolled {
   background: #000;
   border: 1px solid rgba(245,242,237,0.16);
   box-shadow: 0 40px 90px rgba(0,0,0,0.65), 0 0 50px rgba(232,255,71,0.05);
-  z-index: 3;
   opacity: 0;
   animation: cardIn 0.9s cubic-bezier(0.16,1,0.3,1) forwards;
 }
@@ -445,6 +449,14 @@ nav.nav-scrolled {
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(50px) var(--card-xform, rotate(0deg)); }
   to   { opacity: 1; transform: translateY(0) var(--card-xform, rotate(0deg)); }
+}
+/* Kling's entrance must never touch transform/translate/rotate/scale —
+   any of those (even at identity) create a stacking context and would
+   trap the video's mix-blend-mode. Opacity alone is safe once it
+   settles at exactly 1. */
+@keyframes fadeInPlain {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* Show reel — lower left, angled in 3D space, autoplay loop */
@@ -459,15 +471,14 @@ nav.nav-scrolled {
 }
 
 /* Kling levitation — frameless "3D model", scrubbed by scroll.
-   The video's near-black background disappears via screen blending. */
+   The video's near-black background disappears via screen blending.
+   No transform/translate here on purpose — see note above .hero-card. */
 .kling-card {
-  --card-xform: rotate(0deg);
   right: 5vw;
   bottom: 18vh;
   width: min(28vw, 430px);
   aspect-ratio: 1/1;
-  transform: var(--card-xform);
-  animation-delay: 0.45s;
+  animation: fadeInPlain 0.9s ease 0.45s forwards;
   border: none;
   background: transparent;
   box-shadow: none;
@@ -579,7 +590,6 @@ nav.nav-scrolled {
   transform: translateY(-50%);
   overflow: hidden;
   pointer-events: none;
-  z-index: 1;
 }
 .ticker-text {
   display: flex;
@@ -1351,7 +1361,7 @@ a.work-item { display: block; }
   }
   .hero-card { position: static; }
   .reel-card { --card-xform: perspective(900px) rotateY(7deg) rotate(-3deg); width: min(86vw, 430px); }
-  .kling-card { --card-xform: rotate(0deg); width: min(66vw, 320px); }
+  .kling-card { width: min(66vw, 320px); }
   .ticker-text span { font-size: 17vw; }
   .hero-credit { display: none; }
 }

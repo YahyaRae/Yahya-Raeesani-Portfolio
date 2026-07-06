@@ -82,6 +82,13 @@
 <section class="hero">
   <div class="hero-bg-glow"></div>
 
+  <!-- Name ticker — painted first so it sits behind both video cards naturally -->
+  <div class="hero-ticker" aria-label="Yahya Raeesani.Co">
+    <div class="ticker-text">
+      <span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span>
+    </div>
+  </div>
+
   <!-- Show reel — lower left, tilted, autoplay loop -->
   <div class="hero-card reel-card">
     <video id="heroReel" autoplay muted loop playsinline preload="auto" src="Trimmed Show Reel.mov"></video>
@@ -95,17 +102,10 @@
     </button>
   </div>
 
-  <!-- Kling levitation video — lower right, scrubbed by scroll -->
+  <!-- Kling levitation video — lower right, scrubbed by scroll, blends its dark bg into the page -->
   <div class="hero-card kling-card">
     <video id="klingVideo" muted playsinline preload="auto" src="kling_levitate.mp4"></video>
     <span class="kling-hint" id="klingHint">Scroll to play</span>
-  </div>
-
-  <!-- Name ticker — beneath the cards, old EDITOR stroke style -->
-  <div class="hero-ticker" aria-label="Yahya Raeesani.Co">
-    <div class="ticker-text">
-      <span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span>
-    </div>
   </div>
 
   <div class="hero-scroll-cue" onclick="document.getElementById('work').scrollIntoView({behavior:'smooth'})">
