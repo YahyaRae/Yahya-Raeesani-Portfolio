@@ -386,11 +386,43 @@ nav.nav-scrolled {
 
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
+/* Live ambient green glow — two drifting blurred blobs */
 .hero-bg-glow {
   position: absolute; inset: 0;
+  overflow: hidden;
   background:
-    radial-gradient(ellipse 55% 45% at 72% 30%, rgba(232,255,71,0.07) 0%, transparent 70%),
-    radial-gradient(ellipse 45% 55% at 18% 75%, rgba(232,255,71,0.05) 0%, transparent 65%);
+    radial-gradient(ellipse 55% 45% at 72% 30%, rgba(232,255,71,0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 55% at 18% 75%, rgba(232,255,71,0.04) 0%, transparent 65%);
+}
+.hero-bg-glow::before,
+.hero-bg-glow::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  will-change: transform, opacity;
+}
+/* Ground glow beneath the levitating model (lower right) */
+.hero-bg-glow::before {
+  width: 34vw; height: 24vw;
+  right: 2vw; bottom: 8vh;
+  background: radial-gradient(circle, rgba(232,255,71,0.16) 0%, rgba(140,190,40,0.08) 45%, transparent 70%);
+  animation: glowBreathe 6.5s ease-in-out infinite alternate;
+}
+/* Drifting ambient blob (upper left) */
+.hero-bg-glow::after {
+  width: 40vw; height: 32vw;
+  left: -6vw; top: -4vh;
+  background: radial-gradient(circle, rgba(140,190,40,0.1) 0%, rgba(232,255,71,0.05) 50%, transparent 72%);
+  animation: glowDrift 14s ease-in-out infinite alternate;
+}
+@keyframes glowBreathe {
+  from { transform: scale(0.85); opacity: 0.65; }
+  to   { transform: scale(1.15); opacity: 1; }
+}
+@keyframes glowDrift {
+  from { transform: translate(0, 0) scale(1); opacity: 0.7; }
+  to   { transform: translate(9vw, 7vh) scale(1.2); opacity: 1; }
 }
 
 /* Shared video card shell */
@@ -411,31 +443,37 @@ nav.nav-scrolled {
   display: block;
 }
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(50px) rotate(var(--card-tilt, 0deg)); }
-  to   { opacity: 1; transform: translateY(0) rotate(var(--card-tilt, 0deg)); }
+  from { opacity: 0; transform: translateY(50px) var(--card-xform, rotate(0deg)); }
+  to   { opacity: 1; transform: translateY(0) var(--card-xform, rotate(0deg)); }
 }
 
-/* Show reel — lower left, tilted, autoplay loop */
+/* Show reel — lower left, angled in 3D space, autoplay loop */
 .reel-card {
-  --card-tilt: -4deg;
+  --card-xform: perspective(1200px) rotateY(10deg) rotateX(3deg) rotate(-4deg);
   left: 5vw;
   bottom: 24vh;
   width: min(38vw, 560px);
   aspect-ratio: 16/9;
-  transform: rotate(var(--card-tilt));
+  transform: var(--card-xform);
   animation-delay: 0.25s;
 }
 
-/* Kling levitation — lower right, counter-tilt, scrubbed by scroll */
+/* Kling levitation — frameless "3D model", scrubbed by scroll.
+   The video's near-black background disappears via screen blending. */
 .kling-card {
-  --card-tilt: 2deg;
-  right: 6vw;
-  bottom: 20vh;
-  width: min(24vw, 380px);
+  --card-xform: rotate(0deg);
+  right: 5vw;
+  bottom: 18vh;
+  width: min(28vw, 430px);
   aspect-ratio: 1/1;
-  transform: rotate(var(--card-tilt));
+  transform: var(--card-xform);
   animation-delay: 0.45s;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
 }
+.kling-card video { mix-blend-mode: screen; }
 .kling-hint {
   position: absolute;
   bottom: 10px; left: 50%;
@@ -533,14 +571,15 @@ nav.nav-scrolled {
 .hud-sound.sound-on .hud-sound-bars i:nth-child(4) { animation-delay: 0.1s;  height: 80%; }
 @keyframes soundBar { from { transform: scaleY(0.3); } to { transform: scaleY(1); } }
 
-/* Name ticker — giant stroke-font marquee beneath the cards */
+/* Name ticker — giant stroke-font marquee, centered behind the videos */
 .hero-ticker {
   position: absolute;
-  bottom: 1.5vh;
+  top: 50%;
   left: 0; right: 0;
+  transform: translateY(-50%);
   overflow: hidden;
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
 }
 .ticker-text {
   display: flex;
@@ -549,7 +588,7 @@ nav.nav-scrolled {
 }
 .ticker-text span {
   font-family: 'Syne', sans-serif;
-  font-size: 10vw;
+  font-size: 11.5vw;
   font-weight: 800;
   line-height: 1.1;
   color: transparent;
@@ -1311,8 +1350,8 @@ a.work-item { display: block; }
     padding: 3.5rem 1.25rem 14vh;
   }
   .hero-card { position: static; }
-  .reel-card { --card-tilt: -3deg; width: min(86vw, 430px); }
-  .kling-card { --card-tilt: 2deg; width: min(58vw, 280px); }
+  .reel-card { --card-xform: perspective(900px) rotateY(7deg) rotate(-3deg); width: min(86vw, 430px); }
+  .kling-card { --card-xform: rotate(0deg); width: min(66vw, 320px); }
   .ticker-text span { font-size: 17vw; }
   .hero-credit { display: none; }
 }

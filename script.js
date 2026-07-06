@@ -131,10 +131,14 @@ window.addEventListener('load', () => {
   if (!pin || !kling) return;
 
   let duration = 0;
-  kling.addEventListener('loadedmetadata', () => {
-    duration = kling.duration;
+  function grabDuration() {
+    duration = kling.duration || 0;
     kling.pause(); // we drive time directly from scroll
-  });
+    apply();
+  }
+  // Metadata may already be there (cached video) before this script runs
+  if (kling.readyState >= 1) grabDuration();
+  else kling.addEventListener('loadedmetadata', grabDuration);
 
   let ticking = false;
   function apply() {
