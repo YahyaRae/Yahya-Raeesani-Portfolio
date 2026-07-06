@@ -78,33 +78,33 @@
 </div>
 
 
+<div class="hero-pin" id="heroPin">
 <section class="hero">
-  <div class="hero-screen" id="heroScreen">
-    <div class="hero-bg">
-      <video class="hero-reel" id="heroReel" autoplay muted loop playsinline preload="auto" src="Trimmed Show Reel.mov"></video>
-      <div class="hero-reel-overlay"></div>
+  <div class="hero-bg-glow"></div>
+
+  <!-- Show reel — lower left, tilted, autoplay loop -->
+  <div class="hero-card reel-card">
+    <video id="heroReel" autoplay muted loop playsinline preload="auto" src="Trimmed Show Reel.mov"></video>
+    <div class="mini-hud">
+      <span class="hud-rec"><span class="hud-rec-dot"></span>REC</span>
+      <span class="hud-timecode" id="hudTimecode">00:00:00:00</span>
     </div>
+    <button class="hud-sound" id="heroSound" aria-label="Toggle sound">
+      <span class="hud-sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="hud-sound-label">SOUND ON</span>
+    </button>
+  </div>
 
-    <!-- Camera viewfinder HUD -->
-    <div class="hero-hud" aria-hidden="false">
-      <span class="vf-corner vf-tl"></span>
-      <span class="vf-corner vf-tr"></span>
-      <span class="vf-corner vf-bl"></span>
-      <span class="vf-corner vf-br"></span>
+  <!-- Kling levitation video — lower right, scrubbed by scroll -->
+  <div class="hero-card kling-card">
+    <video id="klingVideo" muted playsinline preload="auto" src="kling_levitate.mp4"></video>
+    <span class="kling-hint" id="klingHint">Scroll to play</span>
+  </div>
 
-      <div class="hud-top">
-        <div class="hud-rec"><span class="hud-rec-dot"></span>REC</div>
-        <div class="hud-title">SHOWREEL — 2026</div>
-        <div class="hud-timecode" id="hudTimecode">00:00:00:00</div>
-      </div>
-
-      <div class="hud-bottom">
-        <div class="hud-meta">YR. · 4K · 24FPS</div>
-        <button class="hud-sound" id="heroSound" aria-label="Toggle sound">
-          <span class="hud-sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-          <span class="hud-sound-label">SOUND ON</span>
-        </button>
-      </div>
+  <!-- Name ticker — beneath the cards, old EDITOR stroke style -->
+  <div class="hero-ticker" aria-label="Yahya Raeesani.Co">
+    <div class="ticker-text">
+      <span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span>
     </div>
   </div>
 
@@ -113,6 +113,7 @@
     <span class="cue-line"></span>
   </div>
 </section>
+</div>
 
 <section class="work" id="work">
   <div class="section-tag">Selected work</div>

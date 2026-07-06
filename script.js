@@ -122,28 +122,41 @@ window.addEventListener('load', () => {
   render();
 })();
 
-// ── Hero: 3D screen tilt-away on scroll ──────────────────────────────────
-(function heroTilt3d() {
-  const screen = document.getElementById('heroScreen');
-  const heroEl = document.querySelector('.hero');
+// ── Hero: pinned scroll-scrub of the Kling levitation video ──────────────
+(function heroScrub() {
+  const pin = document.getElementById('heroPin');
+  const kling = document.getElementById('klingVideo');
+  const hint = document.getElementById('klingHint');
   const reel = document.getElementById('heroReel');
-  if (!screen || !heroEl) return;
+  if (!pin || !kling) return;
+
+  let duration = 0;
+  kling.addEventListener('loadedmetadata', () => {
+    duration = kling.duration;
+    kling.pause(); // we drive time directly from scroll
+  });
+
   let ticking = false;
   function apply() {
     ticking = false;
-    const h = heroEl.offsetHeight || 1;
-    const p = Math.min(Math.max(window.scrollY / h, 0), 1);
-    screen.style.transform = `rotateX(${p * 14}deg) scale(${1 - p * 0.18}) translateY(${p * -60}px)`;
-    screen.style.opacity = String(1 - p * 0.55);
-    // Pause the reel offscreen so it doesn't burn resources
+    const track = Math.max(pin.offsetHeight - window.innerHeight, 1);
+    const p = Math.min(Math.max(window.scrollY / track, 0), 1);
+    if (duration) {
+      // Freeze slightly before the end so the last (levitating) frame holds
+      kling.currentTime = p * Math.max(duration - 0.05, 0);
+    }
+    if (hint) hint.classList.toggle('hidden', p > 0.02);
+    // Pause the show reel once the hero is fully scrolled past
     if (reel) {
-      if (p >= 1 && !reel.paused) reel.pause();
-      else if (p < 1 && reel.paused && !reel.dataset.userPaused) reel.play().catch(() => {});
+      const past = window.scrollY > pin.offsetHeight;
+      if (past && !reel.paused) reel.pause();
+      else if (!past && reel.paused) reel.play().catch(() => {});
     }
   }
   window.addEventListener('scroll', () => {
     if (!ticking) { ticking = true; requestAnimationFrame(apply); }
   }, { passive: true });
+  window.addEventListener('resize', apply);
   apply();
 })();
 

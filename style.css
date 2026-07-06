@@ -72,8 +72,6 @@ body:has(button:hover) .cursor-ring { width: 48px; height: 48px; border-color: v
   margin-top: 3px;
 }
 
-  .hero-content { position: relative; z-index: 3; }
-.hero-ticker { position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%); overflow: hidden; pointer-events: none; z-index: 1; }
 
 
 /* ── Floating waveform pill nav ─────────────────────────────────────────── */
@@ -375,131 +373,135 @@ nav.nav-scrolled {
 .vp-speed-btn:hover { color: var(--white); }
 
 /* Hero */
-/* ── Cinematic hero: full-screen show reel in a 3D "screen" ─────────────── */
+/* ── Hero v3: dual video cards + name ticker, pinned scroll-scrub ────────── */
+.hero-pin { height: 230vh; }
 .hero {
+  position: sticky;
+  top: 0;
   height: 100vh;
   height: 100svh;
-  position: relative;
   overflow: hidden;
   background: var(--black);
-  perspective: 1400px;
 }
 
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-/* The screen tilts away in 3D as you scroll (driven by JS) */
-.hero-screen {
-  position: absolute; inset: 0;
-  transform-origin: center 80%;
-  will-change: transform, opacity;
-}
-
-.hero-bg {
-  position: absolute; inset: 0;
-  overflow: hidden;
-  background: var(--black);
-}
-.hero-reel {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-/* Light vignette only — the reel is the statement, keep it bright */
-.hero-reel-overlay {
+.hero-bg-glow {
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 130% 100% at 50% 40%, transparent 55%, rgba(10,10,10,0.5) 100%),
-    linear-gradient(180deg, rgba(10,10,10,0.35) 0%, transparent 18%, transparent 78%, rgba(10,10,10,0.55) 100%);
-  pointer-events: none;
+    radial-gradient(ellipse 55% 45% at 72% 30%, rgba(232,255,71,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 55% at 18% 75%, rgba(232,255,71,0.05) 0%, transparent 65%);
 }
 
-/* ── Viewfinder HUD ──────────────────────────────────────────────────────── */
-.hero-hud {
+/* Shared video card shell */
+.hero-card {
   position: absolute;
-  inset: 0;
-  padding: 104px 2.5rem 2.2rem;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(245,242,237,0.16);
+  box-shadow: 0 40px 90px rgba(0,0,0,0.65), 0 0 50px rgba(232,255,71,0.05);
   z-index: 3;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  pointer-events: none;
-  font-family: 'Syne', sans-serif;
   opacity: 0;
-  animation: fadeUp 0.9s 0.5s forwards;
+  animation: cardIn 0.9s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+.hero-card video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(50px) rotate(var(--card-tilt, 0deg)); }
+  to   { opacity: 1; transform: translateY(0) rotate(var(--card-tilt, 0deg)); }
 }
 
-.vf-corner {
+/* Show reel — lower left, tilted, autoplay loop */
+.reel-card {
+  --card-tilt: -4deg;
+  left: 5vw;
+  bottom: 24vh;
+  width: min(38vw, 560px);
+  aspect-ratio: 16/9;
+  transform: rotate(var(--card-tilt));
+  animation-delay: 0.25s;
+}
+
+/* Kling levitation — lower right, counter-tilt, scrubbed by scroll */
+.kling-card {
+  --card-tilt: 2deg;
+  right: 6vw;
+  bottom: 20vh;
+  width: min(24vw, 380px);
+  aspect-ratio: 1/1;
+  transform: rotate(var(--card-tilt));
+  animation-delay: 0.45s;
+}
+.kling-hint {
   position: absolute;
-  width: 26px; height: 26px;
-  border: 1.5px solid rgba(245,242,237,0.5);
+  bottom: 10px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Syne', sans-serif;
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: rgba(10,10,10,0.55);
+  border: 1px solid rgba(245,242,237,0.2);
+  padding: 6px 14px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  transition: opacity 0.4s;
   pointer-events: none;
+  white-space: nowrap;
 }
-.vf-tl { top: 92px;  left: 1.6rem;  border-right: none; border-bottom: none; }
-.vf-tr { top: 92px;  right: 1.6rem; border-left: none;  border-bottom: none; }
-.vf-bl { bottom: 1.4rem; left: 1.6rem;  border-right: none; border-top: none; }
-.vf-br { bottom: 1.4rem; right: 1.6rem; border-left: none;  border-top: none; }
+.kling-hint.hidden { opacity: 0; }
 
-.hud-top, .hud-bottom {
+/* Mini HUD on the reel card */
+.mini-hud {
+  position: absolute;
+  top: 10px; left: 12px; right: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  font-family: 'Syne', sans-serif;
+  pointer-events: none;
 }
-
 .hud-rec {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; gap: 7px;
+  font-size: 9.5px; font-weight: 700;
   letter-spacing: 0.22em;
   color: var(--white);
-  text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+  text-shadow: 0 1px 8px rgba(0,0,0,0.7);
 }
 .hud-rec-dot {
-  width: 9px; height: 9px;
+  width: 8px; height: 8px;
   border-radius: 50%;
   background: #ff4545;
   box-shadow: 0 0 10px rgba(255,69,69,0.9);
   animation: pulse 1.4s ease-in-out infinite;
 }
-
-.hud-title {
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 0.3em;
-  color: rgba(245,242,237,0.75);
-  text-shadow: 0 1px 8px rgba(0,0,0,0.6);
-  text-align: center;
-}
-
 .hud-timecode {
-  font-size: 12px; font-weight: 700;
+  font-size: 10.5px; font-weight: 700;
   letter-spacing: 0.14em;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 12px rgba(232,255,71,0.4), 0 1px 8px rgba(0,0,0,0.6);
-  min-width: 108px;
-  text-align: right;
+  text-shadow: 0 0 12px rgba(232,255,71,0.4), 0 1px 8px rgba(0,0,0,0.7);
 }
 
-.hud-meta {
-  font-size: 10px; font-weight: 700;
-  letter-spacing: 0.22em;
-  color: rgba(245,242,237,0.45);
-  text-shadow: 0 1px 8px rgba(0,0,0,0.6);
-}
-
-/* Sound toggle — the one interactive HUD element */
+/* Sound toggle — compact, bottom-right of the reel card */
 .hud-sound {
-  pointer-events: auto;
-  display: flex; align-items: center; gap: 10px;
-  padding: 11px 20px;
+  position: absolute;
+  bottom: 10px; right: 10px;
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 13px;
   border-radius: 999px;
   border: 1px solid rgba(232,255,71,0.5);
-  background: rgba(10,10,10,0.55);
-  backdrop-filter: blur(10px);
+  background: rgba(10,10,10,0.6);
+  backdrop-filter: blur(8px);
   color: var(--white);
   font-family: 'Syne', sans-serif;
-  font-size: 10.5px; font-weight: 700;
-  letter-spacing: 0.18em;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 0.16em;
   cursor: none;
   transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
   animation: soundGlow 2.4s ease-in-out infinite;
@@ -513,13 +515,12 @@ nav.nav-scrolled {
   0%, 100% { box-shadow: 0 0 0 rgba(232,255,71,0); }
   50% { box-shadow: 0 0 22px rgba(232,255,71,0.35); }
 }
-
 .hud-sound-bars {
-  display: flex; align-items: flex-end; gap: 2.5px;
-  height: 14px;
+  display: flex; align-items: flex-end; gap: 2px;
+  height: 11px;
 }
 .hud-sound-bars i {
-  width: 2.5px;
+  width: 2px;
   border-radius: 2px;
   background: var(--accent);
   height: 30%;
@@ -531,6 +532,39 @@ nav.nav-scrolled {
 .hud-sound.sound-on .hud-sound-bars i:nth-child(3) { animation-delay: 0.32s; height: 65%; }
 .hud-sound.sound-on .hud-sound-bars i:nth-child(4) { animation-delay: 0.1s;  height: 80%; }
 @keyframes soundBar { from { transform: scaleY(0.3); } to { transform: scaleY(1); } }
+
+/* Name ticker — giant stroke-font marquee beneath the cards */
+.hero-ticker {
+  position: absolute;
+  bottom: 1.5vh;
+  left: 0; right: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+}
+.ticker-text {
+  display: flex;
+  white-space: nowrap;
+  animation: ticker 26s linear infinite;
+}
+.ticker-text span {
+  font-family: 'Syne', sans-serif;
+  font-size: 10vw;
+  font-weight: 800;
+  line-height: 1.1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(245,242,237,0.32);
+  padding-right: 3rem;
+  letter-spacing: -0.03em;
+}
+.ticker-text em {
+  font-style: normal;
+  -webkit-text-stroke: 1.5px rgba(232,255,71,0.55);
+}
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
 
 /* Scroll cue */
 .hero-scroll-cue {
@@ -1266,16 +1300,20 @@ a.work-item { display: block; }
   footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
   .avail-badge { display: none; }
 
-  /* ── Mobile hero: compact HUD ── */
-  .hero-hud { padding: 84px 1.1rem 1.4rem; }
-  .vf-corner { width: 18px; height: 18px; }
-  .vf-tl, .vf-tr { top: 74px; }
-  .vf-tl, .vf-bl { left: 0.6rem; }
-  .vf-tr, .vf-br { right: 0.6rem; }
-  .vf-bl, .vf-br { bottom: 0.8rem; }
-  .hud-title { display: none; }
-  .hud-meta { display: none; }
-  .hud-sound { padding: 9px 15px; }
+  /* ── Mobile hero: stacked cards ── */
+  .hero-pin { height: 200vh; }
+  .hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1.4rem;
+    padding: 3.5rem 1.25rem 14vh;
+  }
+  .hero-card { position: static; }
+  .reel-card { --card-tilt: -3deg; width: min(86vw, 430px); }
+  .kling-card { --card-tilt: 2deg; width: min(58vw, 280px); }
+  .ticker-text span { font-size: 17vw; }
   .hero-credit { display: none; }
 }
 
