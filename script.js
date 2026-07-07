@@ -527,3 +527,201 @@ document.querySelectorAll('.work-item video').forEach(video => {
     });
   });
 })();
+
+// ── Hero: particle name — assembles on scroll, scatters under the cursor ──
+(function heroNameParticles() {
+  const canvas = document.getElementById('nameParticles');
+  const hero = document.querySelector('.hero');
+  const pin = document.getElementById('heroPin');
+  if (!canvas || !hero || !pin) return;
+  const ctx = canvas.getContext('2d', { alpha: true });
+
+  const LIME = [232, 255, 71];
+  const WHITE = [245, 242, 237];
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const coarse = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+
+  let dpr = 1, W = 0, H = 0;
+  let particles = [];
+  let stars = [];
+  const NAME_LINES = ['Yahya', 'Raeesani'];
+
+  // Cursor state (tracked on window so the canvas can stay pointer-events:none
+  // and never block the video cards / sound button beneath it).
+  let mx = -9999, my = -9999, pointerOn = false;
+  let rect = { left: 0, top: 0 };
+
+  function refreshRect() { rect = canvas.getBoundingClientRect(); }
+
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  // Sample the two name lines into target points, then spawn particles.
+  function build() {
+    const cssW = hero.clientWidth;
+    const cssH = hero.clientHeight;
+    if (!cssW || !cssH) return;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = cssW; H = cssH;
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const mobile = cssW < 760;
+    const step = mobile ? 6 : 4;
+    const maxParticles = mobile ? 1800 : 4200;
+
+    // Offscreen text raster
+    const off = document.createElement('canvas');
+    off.width = cssW; off.height = cssH;
+    const octx = off.getContext('2d');
+
+    // Fit font so the longest line spans ~84% of hero width
+    const longest = NAME_LINES.reduce((a, b) => (a.length >= b.length ? a : b));
+    let fontSize = cssW * 0.24;
+    octx.font = `800 ${fontSize}px 'Syne', sans-serif`;
+    const measured = octx.measureText(longest).width || 1;
+    fontSize *= (cssW * 0.84) / measured;
+    fontSize = Math.min(fontSize, cssH * 0.30);
+
+    octx.font = `800 ${fontSize}px 'Syne', sans-serif`;
+    octx.textAlign = 'center';
+    octx.textBaseline = 'middle';
+    octx.fillStyle = '#fff';
+    const lineH = fontSize * 1.02;
+    const cx = cssW / 2;
+    const cy = cssH * 0.44; // slightly above centre — cards sit lower
+    const startY = cy - ((NAME_LINES.length - 1) * lineH) / 2;
+    NAME_LINES.forEach((line, i) => octx.fillText(line, cx, startY + i * lineH));
+
+    const img = octx.getImageData(0, 0, cssW, cssH).data;
+    const pts = [];
+    for (let y = 0; y < cssH; y += step) {
+      for (let x = 0; x < cssW; x += step) {
+        if (img[(y * cssW + x) * 4 + 3] > 128) pts.push([x, y]);
+      }
+    }
+    // Subsample if over budget
+    if (pts.length > maxParticles) {
+      for (let i = pts.length - 1; i > 0; i--) {
+        const j = (Math.random() * (i + 1)) | 0;
+        const t = pts[i]; pts[i] = pts[j]; pts[j] = t;
+      }
+      pts.length = maxParticles;
+    }
+
+    // Preserve current positions across rebuilds so a resize doesn't snap
+    const prev = particles;
+    particles = pts.map((p, i) => {
+      const ang = Math.random() * Math.PI * 2;
+      const rad = Math.max(cssW, cssH) * (0.35 + Math.random() * 0.5);
+      const sx = cx + Math.cos(ang) * rad;
+      const sy = cy + Math.sin(ang) * rad * 0.6;
+      const src = prev[i];
+      const lime = Math.random() < 0.58;
+      return {
+        hx: p[0], hy: p[1],
+        sx, sy,
+        x: src ? src.x : sx,
+        y: src ? src.y : sy,
+        size: (lime ? 1.1 : 1.0) + Math.random() * 1.1,
+        col: lime ? LIME : WHITE,
+        a: 0.55 + Math.random() * 0.4,
+        seed: Math.random() * 6.283,
+        drift: 6 + Math.random() * 14,
+      };
+    });
+
+    // Starfield
+    const starCount = mobile ? 50 : 110;
+    stars = Array.from({ length: starCount }, () => ({
+      x: Math.random() * cssW,
+      y: Math.random() * cssH,
+      r: Math.random() * 1.1 + 0.3,
+      a: Math.random() * 0.4 + 0.15,
+      tw: Math.random() * 6.283,
+      vx: (Math.random() - 0.5) * 0.08,
+      vy: (Math.random() - 0.5) * 0.08,
+    }));
+
+    refreshRect();
+  }
+
+  let tms = 0;
+  function frame(now) {
+    tms = now || 0;
+    ctx.clearRect(0, 0, W, H);
+
+    const track = Math.max(pin.offsetHeight - window.innerHeight, 1);
+    const p = Math.min(Math.max(window.scrollY / track, 0), 1);
+    const f = reduced ? 1 : easeOutCubic(Math.min(p / 0.45, 1));
+
+    // Starfield (drawn first, dim, behind the name)
+    for (const s of stars) {
+      if (!reduced) {
+        s.x += s.vx; s.y += s.vy;
+        if (s.x < 0) s.x += W; else if (s.x > W) s.x -= W;
+        if (s.y < 0) s.y += H; else if (s.y > H) s.y -= H;
+      }
+      const tw = reduced ? 1 : 0.6 + 0.4 * Math.sin(tms * 0.002 + s.tw);
+      ctx.fillStyle = `rgba(200,220,180,${(s.a * tw).toFixed(3)})`;
+      ctx.fillRect(s.x, s.y, s.r, s.r);
+    }
+
+    // Name particles — additive so overlaps bloom into a glow
+    ctx.globalCompositeOperation = 'lighter';
+    const R = 92, R2 = R * R;
+    for (const q of particles) {
+      let sx = q.sx, sy = q.sy;
+      if (!reduced && f < 1) {
+        sx += Math.sin(tms * 0.0006 + q.seed) * q.drift;
+        sy += Math.cos(tms * 0.0007 + q.seed) * q.drift;
+      }
+      const tx = sx + (q.hx - sx) * f;
+      const ty = sy + (q.hy - sy) * f;
+      q.x += (tx - q.x) * 0.14;
+      q.y += (ty - q.y) * 0.14;
+
+      // Cursor repulsion — scatter whatever is near the pointer
+      if (pointerOn && f > 0.12) {
+        const dx = q.x - mx, dy = q.y - my;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < R2 && d2 > 0.01) {
+          const d = Math.sqrt(d2);
+          const push = ((R - d) / R) * 26;
+          q.x += (dx / d) * push;
+          q.y += (dy / d) * push;
+        }
+      }
+
+      const c = q.col;
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${q.a})`;
+      ctx.fillRect(q.x, q.y, q.size, q.size);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+
+    requestAnimationFrame(frame);
+  }
+
+  // Cursor tracking (skip repulsion entirely on touch/coarse devices)
+  if (!coarse) {
+    window.addEventListener('mousemove', (e) => {
+      mx = e.clientX - rect.left;
+      my = e.clientY - rect.top;
+      pointerOn = true;
+    }, { passive: true });
+    window.addEventListener('mouseout', (e) => { if (!e.relatedTarget) pointerOn = false; });
+    window.addEventListener('blur', () => { pointerOn = false; });
+  }
+  window.addEventListener('scroll', refreshRect, { passive: true });
+
+  let rz;
+  window.addEventListener('resize', () => {
+    clearTimeout(rz);
+    rz = setTimeout(build, 180);
+  });
+
+  // Syne may still be loading; rebuild once it's ready so glyphs are correct
+  build();
+  requestAnimationFrame(frame);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
+})();

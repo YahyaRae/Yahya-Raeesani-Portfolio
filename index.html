@@ -82,12 +82,13 @@
 <section class="hero">
   <div class="hero-bg-glow"></div>
 
-  <!-- Name ticker — painted first so it sits behind both video cards naturally -->
-  <div class="hero-ticker" aria-label="Yahya Raeesani.Co">
-    <div class="ticker-text">
-      <span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span><span>Yahya Raeesani<em>.Co</em></span>
-    </div>
-  </div>
+  <!-- Screen-reader / SEO name (canvas text below isn't machine-readable) -->
+  <h1 class="sr-only">Yahya Raeesani — Video Editor</h1>
+
+  <!-- Particle name — painted before the cards so it sits behind them.
+       Must stay free of z-index/transform/filter/opacity so it never
+       becomes a stacking context and traps the kling card's blend. -->
+  <canvas id="nameParticles" class="hero-name-canvas" aria-hidden="true"></canvas>
 
   <!-- Show reel — lower left, tilted, autoplay loop -->
   <div class="hero-card reel-card">
