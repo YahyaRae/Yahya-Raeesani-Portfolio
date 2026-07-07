@@ -544,6 +544,7 @@ document.querySelectorAll('.work-item video').forEach(video => {
   let dpr = 1, W = 0, H = 0;
   let particles = [];
   let stars = [];
+  let dust = [];
   const NAME_LINES = ['Yahya', 'Raeesani'];
 
   // Cursor state (tracked on window so the canvas can stay pointer-events:none
@@ -632,7 +633,7 @@ document.querySelectorAll('.work-item video').forEach(video => {
     });
 
     // Starfield
-    const starCount = mobile ? 50 : 110;
+    const starCount = mobile ? 70 : 160;
     stars = Array.from({ length: starCount }, () => ({
       x: Math.random() * cssW,
       y: Math.random() * cssH,
@@ -642,6 +643,24 @@ document.querySelectorAll('.work-item video').forEach(video => {
       vx: (Math.random() - 0.5) * 0.08,
       vy: (Math.random() - 0.5) * 0.08,
     }));
+
+    // Floating dust motes — bigger, slower, glowing; fill the empty space
+    // around the name and react to the cursor for an interactive feel
+    const dustCount = mobile ? 26 : 55;
+    dust = Array.from({ length: dustCount }, () => {
+      const lime = Math.random() < 0.5;
+      return {
+        x: Math.random() * cssW,
+        y: Math.random() * cssH,
+        r: 1.2 + Math.random() * 2.2,
+        col: lime ? LIME : WHITE,
+        a: 0.1 + Math.random() * 0.22,
+        seed: Math.random() * 6.283,
+        vy: -(0.05 + Math.random() * 0.16), // slow upward float, like embers
+        sway: 14 + Math.random() * 26,
+        ox: 0, oy: 0, // cursor-push offset, relaxes back
+      };
+    });
 
     refreshRect();
   }
@@ -667,17 +686,50 @@ document.querySelectorAll('.work-item video').forEach(video => {
       ctx.fillRect(s.x, s.y, s.r, s.r);
     }
 
-    // Name particles — additive so overlaps bloom into a glow
     ctx.globalCompositeOperation = 'lighter';
     const R = 92, R2 = R * R;
+
+    // Floating dust motes — drift upward with a sway, pushed by the cursor
+    const DR = 130, DR2 = DR * DR;
+    for (const m of dust) {
+      if (!reduced) {
+        m.y += m.vy;
+        if (m.y < -6) { m.y = H + 6; m.x = Math.random() * W; }
+        if (pointerOn) {
+          const dx = (m.x + m.ox) - mx, dy = (m.y + m.oy) - my;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < DR2 && d2 > 0.01) {
+            const d = Math.sqrt(d2);
+            const push = ((DR - d) / DR) * 5;
+            m.ox += (dx / d) * push;
+            m.oy += (dy / d) * push;
+          }
+        }
+        m.ox *= 0.9; m.oy *= 0.9; // relax the cursor push
+      }
+      const swayX = reduced ? 0 : Math.sin(tms * 0.00035 + m.seed) * m.sway;
+      const tw = reduced ? 1 : 0.7 + 0.3 * Math.sin(tms * 0.0016 + m.seed * 2);
+      const c = m.col;
+      ctx.beginPath();
+      ctx.arc(m.x + swayX + m.ox, m.y + m.oy, m.r, 0, 6.283);
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${(m.a * tw).toFixed(3)})`;
+      ctx.fill();
+    }
+
+    // Name particles — additive so overlaps bloom into a glow
     for (const q of particles) {
       let sx = q.sx, sy = q.sy;
       if (!reduced && f < 1) {
         sx += Math.sin(tms * 0.0006 + q.seed) * q.drift;
         sy += Math.cos(tms * 0.0007 + q.seed) * q.drift;
       }
-      const tx = sx + (q.hx - sx) * f;
-      const ty = sy + (q.hy - sy) * f;
+      let tx = sx + (q.hx - sx) * f;
+      let ty = sy + (q.hy - sy) * f;
+      if (!reduced) {
+        // Perpetual micro-wobble so the assembled name shimmers alive
+        tx += Math.sin(tms * 0.0013 + q.seed) * 1.6;
+        ty += Math.cos(tms * 0.0011 + q.seed * 1.7) * 1.6;
+      }
       q.x += (tx - q.x) * 0.14;
       q.y += (ty - q.y) * 0.14;
 
@@ -694,7 +746,8 @@ document.querySelectorAll('.work-item video').forEach(video => {
       }
 
       const c = q.col;
-      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${q.a})`;
+      const tw = reduced ? 1 : 0.82 + 0.18 * Math.sin(tms * 0.0021 + q.seed * 3);
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${(q.a * tw).toFixed(3)})`;
       ctx.fillRect(q.x, q.y, q.size, q.size);
     }
     ctx.globalCompositeOperation = 'source-over';
