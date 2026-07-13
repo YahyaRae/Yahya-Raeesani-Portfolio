@@ -78,43 +78,50 @@
 </div>
 
 
-<div class="hero-pin" id="heroPin">
 <section class="hero">
   <div class="hero-bg-glow"></div>
 
   <!-- Screen-reader / SEO name (canvas text below isn't machine-readable) -->
   <h1 class="sr-only">Yahya Raeesani — Video Editor</h1>
 
-  <!-- Particle name — painted before the cards so it sits behind them.
-       Must stay free of z-index/transform/filter/opacity so it never
-       becomes a stacking context and traps the kling card's blend. -->
+  <!-- Particle name — bursts in after the intro reel folds away -->
   <canvas id="nameParticles" class="hero-name-canvas" aria-hidden="true"></canvas>
 
-  <!-- Show reel — lower left, tilted, autoplay loop -->
-  <div class="hero-card reel-card">
-    <video id="heroReel" autoplay muted loop playsinline preload="auto" src="Trimmed Show Reel.mov"></video>
-    <div class="mini-hud">
-      <span class="hud-rec"><span class="hud-rec-dot"></span>REC</span>
-      <span class="hud-timecode" id="hudTimecode">00:00:00:00</span>
+  <!-- Full-screen intro: the show reel plays on load, then folds into a paper plane -->
+  <div class="hero-intro" id="heroIntro">
+    <div class="intro-fold" id="introFold">
+      <video id="heroReel" autoplay muted playsinline preload="auto" src="Trimmed Show Reel.mov"></video>
+      <div class="mini-hud">
+        <span class="hud-rec"><span class="hud-rec-dot"></span>REC</span>
+        <span class="hud-timecode" id="hudTimecode">00:00:00:00</span>
+      </div>
     </div>
     <button class="hud-sound" id="heroSound" aria-label="Toggle sound">
       <span class="hud-sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
       <span class="hud-sound-label">SOUND ON</span>
     </button>
+    <button class="intro-skip" id="introSkip">Skip intro</button>
   </div>
 
-  <!-- Kling levitation video — lower right, scrubbed by scroll, blends its dark bg into the page -->
-  <div class="hero-card kling-card">
-    <video id="klingVideo" muted playsinline preload="auto" src="kling_levitate.mp4"></video>
-    <span class="kling-hint" id="klingHint">Scroll to play</span>
-  </div>
+  <!-- Paper plane the reel folds into -->
+  <svg class="paper-plane" id="paperPlane" viewBox="0 0 64 64" aria-hidden="true" hidden>
+    <g fill="none" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M4 30 L60 8 L34 56 L28 38 Z" fill="#181a10" stroke="#e8ff47" stroke-width="2"/>
+      <path d="M60 8 L28 38 L22 30 Z" fill="#232614" stroke="#e8ff47" stroke-width="2"/>
+      <path d="M60 8 L28 38" stroke="#e8ff47" stroke-width="2"/>
+    </g>
+  </svg>
+
+  <button class="reel-replay" id="reelReplay" hidden>
+    <span class="rr-tri"></span>
+    <span>Showreel</span>
+  </button>
 
   <div class="hero-scroll-cue" onclick="document.getElementById('work').scrollIntoView({behavior:'smooth'})">
     <span>Scroll</span>
     <span class="cue-line"></span>
   </div>
 </section>
-</div>
 
 <section class="work" id="work">
   <div class="section-tag">Selected work</div>
@@ -126,6 +133,27 @@
       <div class="project-card">
         <div class="project-card-top">
           <span class="project-num">01</span>
+          <div class="project-card-info">
+            <span class="project-cat">Showreel</span>
+            <h3 class="project-name">Show Reel 2026</h3>
+          </div>
+          <a href="#contact" class="project-watch">Watch reel</a>
+        </div>
+        <div class="project-card-media work-item">
+          <div class="work-thumb" style="background:#000; position:relative; overflow:hidden;">
+            <video loop playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+              <source src="Trimmed Show Reel.mov">
+            </video>
+            <div class="work-play" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;"><div class="play-tri"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card-wrap">
+      <div class="project-card">
+        <div class="project-card-top">
+          <span class="project-num">02</span>
           <div class="project-card-info">
             <span class="project-cat">Portfolio</span>
             <h3 class="project-name">Iced Tea Ad</h3>
@@ -146,7 +174,7 @@
     <div class="project-card-wrap">
       <div class="project-card">
         <div class="project-card-top">
-          <span class="project-num">02</span>
+          <span class="project-num">03</span>
           <div class="project-card-info">
             <span class="project-cat">Portfolio</span>
             <h3 class="project-name">Motion Phone Promo</h3>
@@ -167,7 +195,7 @@
     <div class="project-card-wrap">
       <div class="project-card">
         <div class="project-card-top">
-          <span class="project-num">03</span>
+          <span class="project-num">04</span>
           <div class="project-card-info">
             <span class="project-cat">Portfolio</span>
             <h3 class="project-name">Pizza Paper Explainer</h3>
@@ -214,7 +242,6 @@
                 <div class="cm-body"><strong>18K</strong><span>Shares</span></div>
               </li>
             </ul>
-            <div class="clip-verify">Numbers from YouTube Studio · <a href="https://youtube.com/shorts/yE1taB1sEDA" target="_blank" rel="noopener">Verify on YouTube</a></div>
           </div>
           <button class="clip-thumb" data-embed="https://www.youtube.com/embed/yE1taB1sEDA?autoplay=1" aria-label="Play Gen Z Relationship Mindset">
             <img src="https://i.ytimg.com/vi/yE1taB1sEDA/hqdefault.jpg" alt="Gen Z Relationship Mindset — YouTube Short thumbnail" loading="lazy">
@@ -248,7 +275,6 @@
                 <div class="cm-body"><strong>12K</strong><span>Shares</span></div>
               </li>
             </ul>
-            <div class="clip-verify">Numbers from YouTube Studio · <a href="https://youtu.be/JSJdOjpo_r4" target="_blank" rel="noopener">Verify on YouTube</a></div>
           </div>
           <button class="clip-thumb" data-embed="https://www.youtube.com/embed/JSJdOjpo_r4?autoplay=1" aria-label="Play If You're Struggling With Life">
             <img src="https://i.ytimg.com/vi/JSJdOjpo_r4/hqdefault.jpg" alt="If You're Struggling With Life — YouTube Short thumbnail" loading="lazy">

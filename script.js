@@ -122,50 +122,93 @@ window.addEventListener('load', () => {
   render();
 })();
 
-// ── Hero: pinned scroll-scrub of the Kling levitation video ──────────────
-(function heroScrub() {
-  const pin = document.getElementById('heroPin');
-  const kling = document.getElementById('klingVideo');
-  const hint = document.getElementById('klingHint');
+// ── Hero: intro reel → paper-plane fold → name burst state machine ───────
+(function heroIntro() {
+  const intro = document.getElementById('heroIntro');
+  const fold = document.getElementById('introFold');
   const reel = document.getElementById('heroReel');
-  if (!pin || !kling) return;
+  const plane = document.getElementById('paperPlane');
+  const skipBtn = document.getElementById('introSkip');
+  const replayBtn = document.getElementById('reelReplay');
+  const cue = document.querySelector('.hero-scroll-cue');
+  if (!intro || !fold || !reel || !plane) return;
 
-  let duration = 0;
-  function grabDuration() {
-    duration = kling.duration || 0;
-    kling.pause(); // we drive time directly from scroll
-    apply();
-  }
-  // Metadata may already be there (cached video) before this script runs
-  if (kling.readyState >= 1) grabDuration();
-  else kling.addEventListener('loadedmetadata', grabDuration);
+  const INTRO_SECONDS = 8;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let state = 'playing';       // playing | folding | plane | done
+  let mode = 'intro';          // intro (8s cap) | replay (full reel)
 
-  function apply() {
-    const track = Math.max(pin.offsetHeight - window.innerHeight, 1);
-    const p = Math.min(Math.max(window.scrollY / track, 0), 1);
-    if (duration) {
-      // Freeze slightly before the end so the last (levitating) frame holds
-      kling.currentTime = p * Math.max(duration - 0.05, 0);
-    }
-    if (hint) hint.classList.toggle('hidden', p > 0.02);
-    // Pause the show reel once the hero is fully scrolled past
-    if (reel) {
-      const past = window.scrollY > pin.offsetHeight;
-      if (past && !reel.paused) reel.pause();
-      else if (!past && reel.paused) reel.play().catch(() => {});
-    }
+  // Hide the scroll cue until the intro is over (its entrance animation
+  // would out-cascade a plain inline opacity, so suspend that too)
+  if (cue) { cue.style.animation = 'none'; cue.style.opacity = '0'; }
+
+  function burst(instant) {
+    window.dispatchEvent(new CustomEvent('nameBurst', { detail: { instant: !!instant } }));
   }
-  // Cancel-and-reschedule rAF throttle: unlike a "ticking" boolean gate, this
-  // can never get permanently stuck if a scheduled frame is ever dropped
-  // (e.g. the tab is briefly backgrounded right as scrolling starts).
-  let rafId = null;
-  function scheduleApply() {
-    if (rafId) cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(() => { rafId = null; apply(); });
+
+  function finish() {
+    state = 'done';
+    plane.hidden = true;
+    plane.classList.remove('fly');
+    if (replayBtn) replayBtn.hidden = false;
+    if (cue) { cue.style.animation = ''; cue.style.opacity = ''; } // replays its entrance
   }
-  window.addEventListener('scroll', scheduleApply, { passive: true });
-  window.addEventListener('resize', scheduleApply);
-  apply();
+
+  function startFold() {
+    if (state !== 'playing') return;
+    state = 'folding';
+    reel.pause();
+    reel.muted = true;
+    if (reduced) {
+      // No theatrics: cut straight to the formed name
+      intro.style.display = 'none';
+      burst(true);
+      finish();
+      return;
+    }
+    intro.classList.add('folding');
+    setTimeout(() => {
+      intro.style.display = 'none';
+      state = 'plane';
+      plane.hidden = false;
+      // reflow so the .fly animation restarts cleanly on replays
+      void plane.offsetWidth;
+      plane.classList.add('fly');
+      // The name bursts as the plane launches
+      setTimeout(() => burst(false), 380);
+      setTimeout(finish, 1550);
+    }, 1080);
+  }
+
+  // Intro mode folds at the 8s mark; replay mode plays the whole reel
+  reel.addEventListener('timeupdate', () => {
+    if (state === 'playing' && mode === 'intro' && reel.currentTime >= INTRO_SECONDS) startFold();
+  });
+  reel.addEventListener('ended', () => { if (state === 'playing') startFold(); });
+
+  if (skipBtn) skipBtn.addEventListener('click', startFold);
+
+  // Scrolling away during the intro also skips it
+  window.addEventListener('scroll', () => {
+    if (state === 'playing' && window.scrollY > 40) startFold();
+  }, { passive: true });
+
+  // Replay: bring the intro back full-screen and play the full reel
+  if (replayBtn) replayBtn.addEventListener('click', () => {
+    mode = 'replay';
+    state = 'playing';
+    replayBtn.hidden = true;
+    plane.hidden = true;
+    plane.classList.remove('fly');
+    intro.classList.remove('folding');
+    intro.style.display = '';
+    reel.currentTime = 0;
+    reel.play().catch(() => {});
+  });
+
+  // Reduced motion: skip the intro entirely. Deferred a tick so the particle
+  // engine (defined later in this file) has attached its nameBurst listener.
+  if (reduced) setTimeout(startFold, 0);
 })();
 
 // ── Mobile hamburger ─────────────────────────────────────────────────────
@@ -528,12 +571,11 @@ document.querySelectorAll('.work-item video').forEach(video => {
   });
 })();
 
-// ── Hero: particle name — assembles on scroll, scatters under the cursor ──
+// ── Hero: particle name — bursts in after the intro, scatters under cursor ─
 (function heroNameParticles() {
   const canvas = document.getElementById('nameParticles');
   const hero = document.querySelector('.hero');
-  const pin = document.getElementById('heroPin');
-  if (!canvas || !hero || !pin) return;
+  if (!canvas || !hero) return;
   const ctx = canvas.getContext('2d', { alpha: true });
 
   const LIME = [232, 255, 71];
@@ -545,6 +587,10 @@ document.querySelectorAll('.work-item video').forEach(video => {
   let particles = [];
   let stars = [];
   let dust = [];
+  let sparks = [];
+  // Burst timeline: idle → exploding (0.38s) → forming (1.2s) → formed
+  let phase = 'idle';
+  let phaseStart = 0;
   const NAME_LINES = ['Yahya', 'Raeesani'];
 
   // Cursor state (tracked on window so the canvas can stay pointer-events:none
@@ -665,14 +711,66 @@ document.querySelectorAll('.work-item video').forEach(video => {
     refreshRect();
   }
 
+  // ── Heavy burst: sparks fly out and die, name particles explode then form ─
+  const EXPLODE_MS = 380, FORM_MS = 1200;
+
+  function startBurst(instant) {
+    const cx = W / 2, cy = H * 0.44;
+    if (instant || reduced) {
+      phase = 'formed';
+      particles.forEach(q => { q.x = q.hx; q.y = q.hy; });
+      return;
+    }
+    phase = 'exploding';
+    phaseStart = performance.now();
+    // Cluster the name particles at the launch point with outward velocity
+    for (const q of particles) {
+      q.x = cx + (Math.random() - 0.5) * 30;
+      q.y = cy + (Math.random() - 0.5) * 30;
+      const ang = Math.random() * 6.283;
+      const spd = 3 + Math.random() * 14;
+      q.vx = Math.cos(ang) * spd;
+      q.vy = Math.sin(ang) * spd * 0.75;
+    }
+    // One-shot sparks for the heavy-burst flash
+    const mobile = W < 760;
+    const n = mobile ? 160 : 350;
+    sparks = Array.from({ length: n }, () => {
+      const ang = Math.random() * 6.283;
+      const spd = 4 + Math.random() * 20;
+      const lime = Math.random() < 0.6;
+      return {
+        x: cx, y: cy,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd * 0.8,
+        r: 0.8 + Math.random() * 2.2,
+        col: lime ? LIME : WHITE,
+        life: 1,
+        decay: 0.012 + Math.random() * 0.022,
+      };
+    });
+  }
+  window.addEventListener('nameBurst', (e) => startBurst(e.detail && e.detail.instant));
+
   let tms = 0;
   function frame(now) {
     tms = now || 0;
     ctx.clearRect(0, 0, W, H);
 
-    const track = Math.max(pin.offsetHeight - window.innerHeight, 1);
-    const p = Math.min(Math.max(window.scrollY / track, 0), 1);
-    const f = reduced ? 1 : easeOutCubic(Math.min(p / 0.45, 1));
+    // Formation factor from the burst timeline (was scroll-driven before v5)
+    let f = 0;
+    if (phase === 'formed') f = 1;
+    else if (phase === 'exploding') {
+      if (tms - phaseStart >= EXPLODE_MS) {
+        // Hand over to formation from wherever the explosion left them
+        phase = 'forming';
+        phaseStart = tms;
+        particles.forEach(q => { q.sx = q.x; q.sy = q.y; });
+      }
+    } else if (phase === 'forming') {
+      f = easeOutCubic(Math.min((tms - phaseStart) / FORM_MS, 1));
+      if (f >= 1) phase = 'formed';
+    }
 
     // Starfield (drawn first, dim, behind the name)
     for (const s of stars) {
@@ -718,20 +816,26 @@ document.querySelectorAll('.work-item video').forEach(video => {
 
     // Name particles — additive so overlaps bloom into a glow
     for (const q of particles) {
-      let sx = q.sx, sy = q.sy;
-      if (!reduced && f < 1) {
-        sx += Math.sin(tms * 0.0006 + q.seed) * q.drift;
-        sy += Math.cos(tms * 0.0007 + q.seed) * q.drift;
+      if (phase === 'exploding') {
+        // Ballistic outward flight with drag
+        q.x += q.vx; q.y += q.vy;
+        q.vx *= 0.93; q.vy *= 0.93;
+      } else {
+        let sx = q.sx, sy = q.sy;
+        if (!reduced && f < 1) {
+          sx += Math.sin(tms * 0.0006 + q.seed) * q.drift;
+          sy += Math.cos(tms * 0.0007 + q.seed) * q.drift;
+        }
+        let tx = sx + (q.hx - sx) * f;
+        let ty = sy + (q.hy - sy) * f;
+        if (!reduced) {
+          // Perpetual micro-wobble so the assembled name shimmers alive
+          tx += Math.sin(tms * 0.0013 + q.seed) * 1.6;
+          ty += Math.cos(tms * 0.0011 + q.seed * 1.7) * 1.6;
+        }
+        q.x += (tx - q.x) * 0.14;
+        q.y += (ty - q.y) * 0.14;
       }
-      let tx = sx + (q.hx - sx) * f;
-      let ty = sy + (q.hy - sy) * f;
-      if (!reduced) {
-        // Perpetual micro-wobble so the assembled name shimmers alive
-        tx += Math.sin(tms * 0.0013 + q.seed) * 1.6;
-        ty += Math.cos(tms * 0.0011 + q.seed * 1.7) * 1.6;
-      }
-      q.x += (tx - q.x) * 0.14;
-      q.y += (ty - q.y) * 0.14;
 
       // Cursor repulsion — scatter whatever is near the pointer
       if (pointerOn && f > 0.12) {
@@ -749,6 +853,22 @@ document.querySelectorAll('.work-item video').forEach(video => {
       const tw = reduced ? 1 : 0.82 + 0.18 * Math.sin(tms * 0.0021 + q.seed * 3);
       ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${(q.a * tw).toFixed(3)})`;
       ctx.fillRect(q.x, q.y, q.size, q.size);
+    }
+
+    // One-shot burst sparks — fly, fade, die
+    if (sparks.length) {
+      for (const s of sparks) {
+        s.x += s.vx; s.y += s.vy;
+        s.vx *= 0.955; s.vy *= 0.955;
+        s.life -= s.decay;
+        if (s.life <= 0) continue;
+        const c = s.col;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r * (0.5 + s.life * 0.5), 0, 6.283);
+        ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${(s.life * 0.85).toFixed(3)})`;
+        ctx.fill();
+      }
+      sparks = sparks.filter(s => s.life > 0);
     }
     ctx.globalCompositeOperation = 'source-over';
 

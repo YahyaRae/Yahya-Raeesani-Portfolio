@@ -373,11 +373,9 @@ nav.nav-scrolled {
 .vp-speed-btn:hover { color: var(--white); }
 
 /* Hero */
-/* ── Hero v3: dual video cards + name ticker, pinned scroll-scrub ────────── */
-.hero-pin { height: 230vh; }
+/* ── Hero v5: full-screen reel intro → paper-plane fold → particle name ──── */
 .hero {
-  position: sticky;
-  top: 0;
+  position: relative;
   height: 100vh;
   height: 100svh;
   overflow: hidden;
@@ -425,90 +423,119 @@ nav.nav-scrolled {
   to   { transform: translate(9vw, 7vh) scale(1.2); opacity: 1; }
 }
 
-/* Shared video card shell.
-   NOTE: intentionally no z-index here — layering is done via DOM/paint
-   order (the glow + particle-name canvas markup come before the cards in
-   index.html) so that .kling-card never becomes a CSS stacking context.
-   A stacking context would trap its child video's mix-blend-mode inside
-   an empty local context instead of letting it blend with the page. */
-.hero-card {
+/* ── Full-screen intro reel ──────────────────────────────────────────────── */
+.hero-intro {
   position: absolute;
-  border-radius: 18px;
+  inset: 0;
+  z-index: 5;
+  background: #000;
+}
+.intro-fold {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
   background: #000;
-  border: 1px solid rgba(245,242,237,0.16);
-  box-shadow: 0 40px 90px rgba(0,0,0,0.65), 0 0 50px rgba(232,255,71,0.05);
-  opacity: 0;
-  animation: cardIn 0.9s cubic-bezier(0.16,1,0.3,1) forwards;
+  transform-origin: center center;
 }
-.hero-card video {
+.intro-fold video {
   width: 100%; height: 100%;
   object-fit: cover;
   display: block;
 }
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(50px) var(--card-xform, rotate(0deg)); }
-  to   { opacity: 1; transform: translateY(0) var(--card-xform, rotate(0deg)); }
+/* Phase 1+2: full screen shrinks to a card, then folds flat like paper */
+.hero-intro.folding .intro-fold {
+  animation: introFold 1.05s cubic-bezier(0.55, 0, 0.6, 1) forwards;
 }
-/* Kling's entrance must never touch transform/translate/rotate/scale —
-   any of those (even at identity) create a stacking context and would
-   trap the video's mix-blend-mode. Opacity alone is safe once it
-   settles at exactly 1. */
-@keyframes fadeInPlain {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-/* Show reel — lower left, angled in 3D space, autoplay loop */
-.reel-card {
-  --card-xform: perspective(1200px) rotateY(10deg) rotateX(3deg) rotate(-4deg);
-  left: 5vw;
-  bottom: 24vh;
-  width: min(38vw, 560px);
-  aspect-ratio: 16/9;
-  transform: var(--card-xform);
-  animation-delay: 0.25s;
+.hero-intro.folding .mini-hud,
+.hero-intro.folding ~ * .hud-sound,
+.hero-intro.folding .hud-sound,
+.hero-intro.folding .intro-skip { opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.hero-intro.folding { background: transparent; }
+@keyframes introFold {
+  0%   { transform: none; border-radius: 0; filter: brightness(1); }
+  52%  { transform: perspective(1400px) scale(0.32); border-radius: 22px; filter: brightness(0.85); }
+  100% { transform: perspective(1400px) scale(0.30) rotateY(89deg) scaleY(0.24); border-radius: 26px; filter: brightness(0.5); }
 }
 
-/* Kling levitation — frameless "3D model", scrubbed by scroll.
-   The video's near-black background disappears via screen blending.
-   No transform/translate here on purpose — see note above .hero-card. */
-.kling-card {
-  right: 5vw;
-  bottom: 18vh;
-  width: min(28vw, 430px);
-  aspect-ratio: 1/1;
-  animation: fadeInPlain 0.9s ease 0.45s forwards;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  border-radius: 0;
-}
-.kling-card video { mix-blend-mode: screen; }
-.kling-hint {
+/* Skip pill — bottom left */
+.intro-skip {
   position: absolute;
-  bottom: 10px; left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Syne', sans-serif;
-  font-size: 9.5px; font-weight: 700;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--white);
-  background: rgba(10,10,10,0.55);
-  border: 1px solid rgba(245,242,237,0.2);
-  padding: 6px 14px;
+  bottom: 2rem; left: 2rem;
+  border: 1px solid rgba(245,242,237,0.3);
   border-radius: 999px;
-  backdrop-filter: blur(6px);
-  transition: opacity 0.4s;
-  pointer-events: none;
-  white-space: nowrap;
+  padding: 9px 18px;
+  background: rgba(10,10,10,0.55);
+  backdrop-filter: blur(8px);
+  color: rgba(245,242,237,0.75);
+  font-family: 'Syne', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: none;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
-.kling-hint.hidden { opacity: 0; }
+.intro-skip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(232,255,71,0.08);
+}
 
-/* Mini HUD on the reel card */
+/* ── Paper plane the reel folds into ─────────────────────────────────────── */
+.paper-plane {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 74px; height: 74px;
+  margin: -37px 0 0 -37px;
+  z-index: 6;
+  filter: drop-shadow(0 0 14px rgba(232,255,71,0.45));
+}
+.paper-plane.fly {
+  animation: planeFly 1.5s cubic-bezier(0.5, 0, 0.85, 0.4) forwards;
+}
+@keyframes planeFly {
+  0%   { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  22%  { transform: translate(-7vw, 5vh) rotate(-16deg) scale(1.05); opacity: 1; }
+  100% { transform: translate(58vw, -52vh) rotate(18deg) scale(0.55); opacity: 0; }
+}
+
+/* Replay pill — appears in the corner once the intro is gone */
+.reel-replay {
+  position: absolute;
+  bottom: 2rem; left: 2rem;
+  z-index: 4;
+  display: flex; align-items: center; gap: 9px;
+  border: 1px solid rgba(245,242,237,0.3);
+  border-radius: 999px;
+  padding: 10px 20px;
+  background: rgba(10,10,10,0.5);
+  backdrop-filter: blur(8px);
+  color: rgba(245,242,237,0.85);
+  font-family: 'Syne', sans-serif;
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: none;
+  opacity: 0;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  animation: fadeUp 0.7s 0.2s forwards;
+}
+.reel-replay[hidden] { display: none; }
+.reel-replay:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(232,255,71,0.08);
+}
+.rr-tri {
+  width: 0; height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid var(--accent);
+}
+
+/* Mini HUD on the intro (top strip, under the nav) */
 .mini-hud {
   position: absolute;
-  top: 10px; left: 12px; right: 12px;
+  top: 96px; left: 2rem; right: 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -516,8 +543,8 @@ nav.nav-scrolled {
   pointer-events: none;
 }
 .hud-rec {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 9.5px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700;
   letter-spacing: 0.22em;
   color: var(--white);
   text-shadow: 0 1px 8px rgba(0,0,0,0.7);
@@ -530,19 +557,19 @@ nav.nav-scrolled {
   animation: pulse 1.4s ease-in-out infinite;
 }
 .hud-timecode {
-  font-size: 10.5px; font-weight: 700;
+  font-size: 12px; font-weight: 700;
   letter-spacing: 0.14em;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
   text-shadow: 0 0 12px rgba(232,255,71,0.4), 0 1px 8px rgba(0,0,0,0.7);
 }
 
-/* Sound toggle — compact, bottom-right of the reel card */
+/* Sound toggle — bottom-right of the full-screen intro */
 .hud-sound {
   position: absolute;
-  bottom: 10px; right: 10px;
-  display: flex; align-items: center; gap: 7px;
-  padding: 7px 13px;
+  bottom: 2rem; right: 2rem;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
   border-radius: 999px;
   border: 1px solid rgba(232,255,71,0.5);
   background: rgba(10,10,10,0.6);
@@ -582,9 +609,7 @@ nav.nav-scrolled {
 .hud-sound.sound-on .hud-sound-bars i:nth-child(4) { animation-delay: 0.1s;  height: 80%; }
 @keyframes soundBar { from { transform: scaleY(0.3); } to { transform: scaleY(1); } }
 
-/* Particle name — canvas centered behind the video cards.
-   Deliberately no z-index/transform/filter/opacity: any of those would
-   make this a stacking context and re-trap the kling card's blend. */
+/* Particle name — canvas behind the intro layer */
 .hero-name-canvas {
   position: absolute;
   inset: 0;
@@ -912,19 +937,6 @@ section { padding: 6rem 4rem; }
   color: rgba(245,242,237,0.4);
   margin-top: 2px;
 }
-.clip-verify {
-  margin-top: 1.7rem;
-  font-size: 12px;
-  color: rgba(245,242,237,0.35);
-}
-.clip-verify a {
-  color: var(--accent);
-  text-decoration: none;
-  border-bottom: 1px solid rgba(232,255,71,0.35);
-  transition: border-color 0.2s;
-}
-.clip-verify a:hover { border-color: var(--accent); }
-
 /* Vertical short thumbnail — uses the real YouTube thumbnail */
 .clip-thumb {
   position: relative;
@@ -1338,19 +1350,12 @@ a.work-item { display: block; }
   footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
   .avail-badge { display: none; }
 
-  /* ── Mobile hero: stacked cards ── */
-  .hero-pin { height: 200vh; }
-  .hero {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 1.4rem;
-    padding: 3.5rem 1.25rem 14vh;
-  }
-  .hero-card { position: static; }
-  .reel-card { --card-xform: perspective(900px) rotateY(7deg) rotate(-3deg); width: min(86vw, 430px); }
-  .kling-card { width: min(66vw, 320px); }
+  /* ── Mobile hero: full-screen intro, compact controls ── */
+  .mini-hud { top: 78px; left: 1rem; right: 1rem; }
+  .hud-sound { bottom: 1.25rem; right: 1rem; padding: 8px 14px; }
+  .intro-skip { bottom: 1.25rem; left: 1rem; padding: 8px 14px; }
+  .reel-replay { bottom: 1.25rem; left: 1rem; padding: 9px 16px; }
+  .paper-plane { width: 56px; height: 56px; margin: -28px 0 0 -28px; }
   .hero-credit { display: none; }
 }
 
