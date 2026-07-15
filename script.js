@@ -137,6 +137,10 @@ window.addEventListener('load', () => {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let state = 'playing';       // playing | folding | plane | done
   let mode = 'intro';          // intro (8s cap) | replay (full reel)
+  let timers = [];
+
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
 
   // Hide the scroll cue until the intro is over (its entrance animation
   // would out-cascade a plain inline opacity, so suspend that too)
@@ -149,9 +153,30 @@ window.addEventListener('load', () => {
   function finish() {
     state = 'done';
     plane.hidden = true;
-    plane.classList.remove('fly');
+    plane.classList.remove('fly', 'appear');
     if (replayBtn) replayBtn.hidden = false;
     if (cue) { cue.style.animation = ''; cue.style.opacity = ''; } // replays its entrance
+  }
+
+  // Freeze the current video frame onto the two fold halves so the "paper"
+  // being folded is the actual reel image
+  function snapshotToFoldHalves() {
+    const l = document.getElementById('foldLeft');
+    const r = document.getElementById('foldRight');
+    if (!l || !r) return;
+    try {
+      const c = document.createElement('canvas');
+      // Match the on-screen crop of object-fit:cover so the halves line up
+      const vw = reel.videoWidth || 1280, vh = reel.videoHeight || 720;
+      const bw = intro.clientWidth || 1280, bh = intro.clientHeight || 720;
+      const scale = Math.max(bw / vw, bh / vh);
+      c.width = bw; c.height = bh;
+      const cctx = c.getContext('2d');
+      cctx.drawImage(reel, (bw - vw * scale) / 2, (bh - vh * scale) / 2, vw * scale, vh * scale);
+      const url = `url(${c.toDataURL('image/jpeg', 0.72)})`;
+      l.style.backgroundImage = url;
+      r.style.backgroundImage = url;
+    } catch (e) { /* halves fall back to their paper-dark background color */ }
   }
 
   function startFold() {
@@ -166,18 +191,25 @@ window.addEventListener('load', () => {
       finish();
       return;
     }
+    snapshotToFoldHalves();
     intro.classList.add('folding');
-    setTimeout(() => {
+    // The plane materialises while the dart is still sharpening (t≈1.05s),
+    // so it's on screen as the fold completes rather than after it
+    later(() => {
+      plane.hidden = false;
+      plane.classList.add('appear');
+    }, 1050);
+    later(() => {
       intro.style.display = 'none';
       state = 'plane';
-      plane.hidden = false;
+      plane.classList.remove('appear');
       // reflow so the .fly animation restarts cleanly on replays
       void plane.offsetWidth;
       plane.classList.add('fly');
       // The name bursts as the plane launches
-      setTimeout(() => burst(false), 380);
-      setTimeout(finish, 1550);
-    }, 1080);
+      later(() => burst(false), 380);
+      later(finish, 1550);
+    }, 1600);
   }
 
   // Intro mode folds at the 8s mark; replay mode plays the whole reel
@@ -195,11 +227,12 @@ window.addEventListener('load', () => {
 
   // Replay: bring the intro back full-screen and play the full reel
   if (replayBtn) replayBtn.addEventListener('click', () => {
+    clearTimers(); // no stale fold/flight callbacks from a previous run
     mode = 'replay';
     state = 'playing';
     replayBtn.hidden = true;
     plane.hidden = true;
-    plane.classList.remove('fly');
+    plane.classList.remove('fly', 'appear');
     intro.classList.remove('folding');
     intro.style.display = '';
     reel.currentTime = 0;

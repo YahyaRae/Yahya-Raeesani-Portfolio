@@ -91,6 +91,10 @@
   <div class="hero-intro" id="heroIntro">
     <div class="intro-fold" id="introFold">
       <video id="heroReel" autoplay muted playsinline preload="auto" src="Trimmed Show Reel.mov"></video>
+      <!-- Paper-fold rig: the paused frame is snapshotted onto these halves,
+           then the left half folds over the right like a sheet of paper -->
+      <div class="fold-half fold-right" id="foldRight"></div>
+      <div class="fold-half fold-left" id="foldLeft"></div>
       <div class="mini-hud">
         <span class="hud-rec"><span class="hud-rec-dot"></span>REC</span>
         <span class="hud-timecode" id="hudTimecode">00:00:00:00</span>
