@@ -931,3 +931,154 @@ document.querySelectorAll('.work-item video').forEach(video => {
   requestAnimationFrame(frame);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
 })();
+
+// ── YR. keyboard: scroll-scrubbed exploded-view image sequence ─
+(function keyboardShowcase() {
+  const section = document.getElementById('keyboard-showcase');
+  const canvas = document.getElementById('kbCanvas');
+  if (!section || !canvas) return;
+
+  const FRAME_COUNT = 192;
+  const BASE_PATH = 'Keboard Sequence';
+  const STUDIO_BG = '#e7e7e4';
+  const frameUrl = (i) => encodeURI(`${BASE_PATH}/${String(i + 1).padStart(5, '0')}.jpg`);
+
+  const reducedFrame = document.getElementById('kbReducedFrame');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Reduced motion: one static frame, no scroll wiring, no preloading the rest
+  if (reduced) {
+    section.classList.add('kb-reduced');
+    if (reducedFrame) reducedFrame.src = frameUrl(Math.floor(FRAME_COUNT * 0.5));
+    return;
+  }
+
+  const ctx = canvas.getContext('2d');
+  const loader = document.getElementById('kbLoader');
+  const percentEl = document.getElementById('kbPercent');
+  const scenes = Array.from(section.querySelectorAll('.kb-scene'));
+
+  let dpr = 1, W = 0, H = 0;
+  const images = new Array(FRAME_COUNT);
+  let loadedCount = 0;
+  let currentFrame = -1;
+
+  function draw(img) {
+    if (!img || !img.naturalWidth || !W || !H) return;
+    ctx.fillStyle = STUDIO_BG;
+    ctx.fillRect(0, 0, W, H);
+    const ir = img.naturalWidth / img.naturalHeight;
+    const cr = W / H;
+    let dw, dh;
+    if (ir > cr) { dw = W; dh = W / ir; } else { dh = H; dw = H * ir; }
+    ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  }
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.clientWidth;
+    H = canvas.clientHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (currentFrame >= 0) draw(images[currentFrame]);
+  }
+
+  function loadFrame(i) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.decoding = 'async';
+      const done = () => {
+        loadedCount++;
+        if (percentEl) percentEl.textContent = Math.round((loadedCount / FRAME_COUNT) * 100);
+        resolve();
+      };
+      img.onload = () => (img.decode ? img.decode().then(done).catch(done) : done());
+      img.onerror = done;
+      images[i] = img;
+      img.src = frameUrl(i);
+    });
+  }
+
+  const CONCURRENCY = 12;
+  async function loadAll() {
+    await loadFrame(0);
+    currentFrame = 0;
+    draw(images[0]);
+
+    let next = 1;
+    async function worker() {
+      while (next < FRAME_COUNT) {
+        const i = next++;
+        await loadFrame(i);
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, FRAME_COUNT) }, worker));
+
+    if (loader) {
+      loader.classList.add('is-hidden');
+      setTimeout(() => loader.remove(), 700);
+    }
+  }
+
+  // Clamped piecewise-linear interpolation for the scroll-tied scene fades
+  function mapRange(v, range, out) {
+    if (v <= range[0]) return out[0];
+    const last = range.length - 1;
+    if (v >= range[last]) return out[last];
+    for (let i = 0; i < last; i++) {
+      if (v >= range[i] && v <= range[i + 1]) {
+        const t = (v - range[i]) / (range[i + 1] - range[i]);
+        return out[i] + t * (out[i + 1] - out[i]);
+      }
+    }
+    return out[last];
+  }
+
+  const WINDOW = 0.1;
+  const sceneRanges = scenes.map((el) => {
+    const at = parseFloat(el.dataset.kbAt);
+    const isFirst = at <= 0;
+    const isLast = at >= 1;
+    const range = isFirst
+      ? [0, WINDOW * 0.6, WINDOW]
+      : isLast
+      ? [1 - WINDOW, 1 - WINDOW * 0.4, 1]
+      : [at - WINDOW, at, at + WINDOW * 0.6, at + WINDOW];
+    const opacityOut = isFirst ? [1, 1, 0] : isLast ? [0, 1, 1] : [0, 1, 1, 0];
+    const yOut = isFirst ? [0, 0, -24] : isLast ? [24, 0, 0] : [24, 0, 0, -24];
+    return { el, range, opacityOut, yOut };
+  });
+
+  let ticking = false;
+  function update() {
+    ticking = false;
+    const rect = section.getBoundingClientRect();
+    const trackHeight = section.offsetHeight - window.innerHeight;
+    const progress = trackHeight > 0 ? Math.min(1, Math.max(0, -rect.top / trackHeight)) : 0;
+
+    const frameIndex = Math.round(progress * (FRAME_COUNT - 1));
+    if (frameIndex !== currentFrame && images[frameIndex] && images[frameIndex].naturalWidth) {
+      currentFrame = frameIndex;
+      draw(images[frameIndex]);
+    }
+
+    sceneRanges.forEach(({ el, range, opacityOut, yOut }) => {
+      el.style.opacity = mapRange(progress, range, opacityOut);
+      el.style.setProperty('--kb-y', mapRange(progress, range, yOut) + 'px');
+    });
+  }
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', () => { resize(); update(); });
+
+  resize();
+  loadAll();
+  update();
+})();
